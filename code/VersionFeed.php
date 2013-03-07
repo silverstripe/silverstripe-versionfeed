@@ -63,7 +63,9 @@ class VersionFeed extends SiteTreeExtension {
 			$previous = $version;
 		}
 
-		if ($fullHistory && $previous) {
+		// Push the first version on to the list - only if we're looking at the full history or if it's the first
+		// version in the version history.
+		if ($previous && ($fullHistory || $versions->count() == 1)) {
 			$first = clone($previous);
 			$first->DiffContent = new HTMLText();
 			$first->DiffContent->setValue('<div>' . $first->obj('Content')->forTemplate() . '</div>');

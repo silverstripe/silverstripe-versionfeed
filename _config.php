@@ -1,4 +1,4 @@
 <?php
 
-Object::add_extension('Page', 'VersionFeed');
-Object::add_extension('ContentController', 'VersionFeed_Controller');
+SiteTree::add_extension('VersionFeed');
+ContentController::add_extension('VersionFeed_Controller');
