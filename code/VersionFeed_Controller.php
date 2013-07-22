@@ -29,9 +29,19 @@ class VersionFeed_Controller extends Extension {
 	function changes() {
 		if(!$this->owner->PublicHistory) throw new SS_HTTPResponse_Exception('Page history not viewable', 404);;
 
+		// Cache the diffs, otherwise it will take 5secs to generate 100 diffs which could lead to DOS.
+		$cache = SS_Cache::factory('VersionFeed_Controller');
+		$cache->setOption('automatic_serialization', true);
+		$key = 'changes' . $this->owner->Version;
+		$entries = $cache->load($key);
+		if(!$entries) {
+			$entries = $this->owner->getDiffedChanges();
+			$cache->save($entries, $key);
+		}
+
 		// Generate the output.
 		$title = sprintf(_t('RSSHistory.SINGLEPAGEFEEDTITLE', 'Updates to %s page'), $this->owner->Title);		
-		$rss = new RSSFeed($this->owner->getDiffedChanges(), $this->owner->request->getURL(), $title, '', 'Title', '', null);
+		$rss = new RSSFeed($entries, $this->owner->request->getURL(), $title, '', 'Title', '', null);
 		$rss->setTemplate('Page_changes_rss');
 		return $rss->outputToBrowser();
 	}
@@ -40,15 +50,33 @@ class VersionFeed_Controller extends Extension {
 	 * Get all changes from the site in a RSS feed.
 	 */
 	function allchanges() {
-		// Fetch the latest changes on the entire site.
-		$latestChanges = DB::query('SELECT * FROM "SiteTree_versions" WHERE "WasPublished"=\'1\' AND "CanViewType" IN (\'Anyone\', \'Inherit\') AND "ShowInSearch"=1 AND ("PublicHistory" IS NULL OR "PublicHistory" = \'1\') ORDER BY "LastEdited" DESC LIMIT 20');
 
-		$changeList = new ArrayList();
-		foreach ($latestChanges as $record) {
-			// Get the diff to the previous version.
-			$version = new Versioned_Version($record);
-			$changes = $version->getDiffedChanges($version->Version, false);
-			if ($changes && $changes->Count()) $changeList->push($changes->First());
+		$latestChanges = DB::query('SELECT * FROM "SiteTree_versions" WHERE "WasPublished"=\'1\' AND "CanViewType" IN (\'Anyone\', \'Inherit\') AND "ShowInSearch"=1 AND ("PublicHistory" IS NULL OR "PublicHistory" = \'1\') ORDER BY "LastEdited" DESC LIMIT 20');
+		$lastChange = $latestChanges->record();
+		$latestChanges->rewind();
+
+		if ($lastChange) {
+
+			// Cache the diffs, otherwise it will take 5secs to generate 100 diffs which could lead to DOS.
+			$cache = SS_Cache::factory('VersionFeed_Controller');
+			$cache->setOption('automatic_serialization', true);
+			$key = 'allchanges' . preg_replace('#[^a-zA-Z0-9_]#', '', $lastChange['LastEdited']);
+
+			$changeList = $cache->load($key);
+			if(!$changeList) {
+
+				$changeList = new ArrayList();
+
+				foreach ($latestChanges as $record) {
+					// Get the diff to the previous version.
+					$version = new Versioned_Version($record);
+					$changes = $version->getDiffedChanges($version->Version, false);
+					if ($changes && $changes->Count()) $changeList->push($changes->First());
+				}
+
+				$cache->save($changeList, $key);
+			}
+
 		}
 
 		// Produce output

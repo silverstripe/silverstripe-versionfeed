@@ -51,6 +51,9 @@ class VersionFeed extends SiteTreeExtension {
 					$version->DiffContent->setValue('<div>'.$diff->obj('Content')->forTemplate().'</div>');
 					$changed = true;
 				}
+
+				// Copy the link so it can be cached by SS_Cache.
+				$version->GeneratedLink = $version->AbsoluteLink();
 			}
 
 			// Omit the versions that haven't been visibly changed (only takes the above fields into consideration).
