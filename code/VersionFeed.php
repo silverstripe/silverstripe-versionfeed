@@ -83,9 +83,24 @@ class VersionFeed extends SiteTreeExtension {
 		$fields->addFieldToTab('Root.Settings', $publicHistory = new FieldGroup(
 			new CheckboxField('PublicHistory', $this->owner->fieldLabel(_t(
 				'RSSHistory.LABEL',
-				'Publish public RSS feed containing every published version of this page.'))
+				'Make history public'))
 		)));
 		$publicHistory->setTitle($this->owner->fieldLabel('Public history'));
+
+		$warning =
+			"Publicising the history will also disclose the changes that have at the time been protected " .
+			"from the public view.";
+
+		$fields->addFieldToTab('Root.Settings', new LiteralField('PublicHistoryWarning', $warning), 'PublicHistory');
+
+		if ($this->owner->CanViewType!='Anyone') {
+			$warning =
+				"Changing access settings in such a way that this page or pages under it become publicly<br>" .
+				"accessible may result in publicising all historical changes on these pages too. Please review<br>" .
+				"this section's \"Public history\" settings to ascertain only intended information is disclosed.";
+
+			$fields->addFieldToTab('Root.Settings', new LiteralField('PublicHistoryWarning2', $warning), 'CanViewType');
+		}
 	}
 
 	public function getSiteRSSLink() {

@@ -29,12 +29,12 @@ class VersionFeed_Controller extends Extension {
 	function changes() {
 		if(!$this->owner->PublicHistory) throw new SS_HTTPResponse_Exception('Page history not viewable', 404);;
 
-		// Cache the diffs, otherwise it will take 5secs to generate 100 diffs which could lead to DOS.
+		// Cache the diffs to remove DOS possibility.
 		$cache = SS_Cache::factory('VersionFeed_Controller');
 		$cache->setOption('automatic_serialization', true);
 		$key = 'changes' . $this->owner->Version;
 		$entries = $cache->load($key);
-		if(!$entries) {
+		if(!$entries || isset($_GET['flush'])) {
 			$entries = $this->owner->getDiffedChanges();
 			$cache->save($entries, $key);
 		}
@@ -57,19 +57,27 @@ class VersionFeed_Controller extends Extension {
 
 		if ($lastChange) {
 
-			// Cache the diffs, otherwise it will take 5secs to generate 100 diffs which could lead to DOS.
+			// Cache the diffs to remove DOS possibility.
+			$member = Member::currentUser();
 			$cache = SS_Cache::factory('VersionFeed_Controller');
 			$cache->setOption('automatic_serialization', true);
-			$key = 'allchanges' . preg_replace('#[^a-zA-Z0-9_]#', '', $lastChange['LastEdited']);
+			$key = 'allchanges' . preg_replace('#[^a-zA-Z0-9_]#', '', $lastChange['LastEdited']) .
+				($member ? $member->ID : 'public');
 
 			$changeList = $cache->load($key);
-			if(!$changeList) {
+			if(!$changeList || isset($_GET['flush'])) {
 
 				$changeList = new ArrayList();
 
 				foreach ($latestChanges as $record) {
+					// Check if the page should be visible.
+					// WARNING: although we are providing historical details, we check the current configuration.
+					$page = SiteTree::get()->filter(array('ID'=>$record['RecordID']))->First();
+					if (!$page->canView(new Member())) continue;
+
 					// Get the diff to the previous version.
 					$version = new Versioned_Version($record);
+
 					$changes = $version->getDiffedChanges($version->Version, false);
 					if ($changes && $changes->Count()) $changeList->push($changes->First());
 				}
