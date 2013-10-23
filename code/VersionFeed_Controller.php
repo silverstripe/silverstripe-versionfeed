@@ -95,7 +95,12 @@ class VersionFeed_Controller extends Extension {
 
 	function linkToAllSiteRSSFeed() {
 		// RSS feed to all-site changes.
-		RSSFeed::linkToFeed($this->owner->getSiteRSSLink(), $this->linkToAllSitesRSSFeedTitle());
+		$title = Convert::raw2xml($this->linkToAllSitesRSSFeedTitle());
+		$url = $this->owner->getSiteRSSLink();
+
+		Requirements::insertHeadTags(
+			'<link rel="alternate nofollow" type="application/rss+xml" title="' . $title .
+			'" href="' . $url . '" />');
 	}
 
 	function linkToAllSitesRSSFeedTitle() {
