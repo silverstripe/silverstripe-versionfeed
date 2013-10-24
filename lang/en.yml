@@ -1,0 +1,9 @@
+en:
+  RSSHistory:
+    LABEL: 'Make history public'
+    SINGLEPAGEFEEDTITLE: 'Updates to %s page'
+    SITEFEEDTITLE: 'Updates to %s'
+    TITLECHANGED: 'Title has changed:'
+  VersionFeed:
+    Warning: 'Publicising the history will also disclose the changes that have at the time been protected from the public view.'
+    Warning2: 'Changing access settings in such a way that this page or pages under it become publicly<br>accessible may result in publicising all historical changes on these pages too. Please review<br>this section''s "Public history" settings to ascertain only intended information is disclosed.'
