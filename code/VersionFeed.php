@@ -9,6 +9,10 @@ class VersionFeed extends SiteTreeExtension {
 		'PublicHistory' => true
 	);
 
+	public function updateFieldLabels(&$labels) {
+		$labels['PublicHistory'] = _t('RSSHistory.LABEL', 'Make history public');
+	}
+
 	/**
 	 * Compile a list of changes to the current page, excluding non-published and explicitly secured versions.
 	 *
@@ -81,23 +85,24 @@ class VersionFeed extends SiteTreeExtension {
 	public function updateSettingsFields(FieldList $fields) {
 		// Add public history field.
 		$fields->addFieldToTab('Root.Settings', $publicHistory = new FieldGroup(
-			new CheckboxField('PublicHistory', $this->owner->fieldLabel(_t(
-				'RSSHistory.LABEL',
-				'Make history public'))
+			new CheckboxField('PublicHistory', $this->owner->fieldLabel('PublicHistory')
 		)));
-		$publicHistory->setTitle($this->owner->fieldLabel('Public history'));
 
-		$warning =
+		$warning = _t(
+			'VersionFeed.Warning',
 			"Publicising the history will also disclose the changes that have at the time been protected " .
-			"from the public view.";
+			"from the public view."
+		);
 
 		$fields->addFieldToTab('Root.Settings', new LiteralField('PublicHistoryWarning', $warning), 'PublicHistory');
 
 		if ($this->owner->CanViewType!='Anyone') {
-			$warning =
+			$warning = _t(
+				'VersionFeed.Warning2',
 				"Changing access settings in such a way that this page or pages under it become publicly<br>" .
 				"accessible may result in publicising all historical changes on these pages too. Please review<br>" .
-				"this section's \"Public history\" settings to ascertain only intended information is disclosed.";
+				"this section's \"Public history\" settings to ascertain only intended information is disclosed."
+			);
 
 			$fields->addFieldToTab('Root.Settings', new LiteralField('PublicHistoryWarning2', $warning), 'CanViewType');
 		}
