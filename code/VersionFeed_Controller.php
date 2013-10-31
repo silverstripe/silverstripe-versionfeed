@@ -2,7 +2,7 @@
 
 class VersionFeed_Controller extends Extension {
 
-	static $allowed_actions = array(
+	private static $allowed_actions = array(
 		'changes',
 		'allchanges'
 	);

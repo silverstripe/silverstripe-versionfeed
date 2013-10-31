@@ -1,11 +1,12 @@
 <?php
 
 class VersionFeed extends SiteTreeExtension {
-	static $db = array(
+	
+	private static $db = array(
 		'PublicHistory' => 'Boolean'
 	);
 
-	static $defaults = array(
+	private static $defaults = array(
 		'PublicHistory' => true
 	);
 
