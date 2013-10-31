@@ -32,7 +32,7 @@ class VersionFeed_Controller extends Extension {
 		// Cache the diffs to remove DOS possibility.
 		$cache = SS_Cache::factory('VersionFeed_Controller');
 		$cache->setOption('automatic_serialization', true);
-		$key = 'changes' . $this->owner->Version;
+		$key = implode('_', array('changes', $this->owner->ID, $this->owner->Version));
 		$entries = $cache->load($key);
 		if(!$entries || isset($_GET['flush'])) {
 			$entries = $this->owner->getDiffedChanges();
@@ -85,6 +85,8 @@ class VersionFeed_Controller extends Extension {
 				$cache->save($changeList, $key);
 			}
 
+		} else {
+			$changeList = new ArrayList();
 		}
 
 		// Produce output

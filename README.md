@@ -1,5 +1,7 @@
 # Version Feed
 
+[![Build Status](https://secure.travis-ci.org/silverstripe-labs/silverstripe-versionfeed.png)](http://travis-ci.org/silverstripe-labs/silverstripe-versionfeed)
+
 ## Overview
 
 The module creates an RSS feed on each page with their change history, as well as one for the entire site.
