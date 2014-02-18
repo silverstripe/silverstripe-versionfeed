@@ -32,15 +32,20 @@ class VersionFeedTest extends SapphireTest {
 		$page->Title = 'My Unpublished Changed Title';
 		$page->write();
 
+		// Strip spaces from test output because they're not reliably maintained by the HTML Tidier
+		$cleanDiffOutput = function($val) {
+			return str_replace(' ','',strip_tags($val));
+		};
+
 		$this->assertContains(
-			_t('RSSHistory.TITLECHANGED', 'Title has changed:') . 'My Changed Title',
-			array_map('strip_tags', $page->getDiffedChanges()->column('DiffTitle')),
+			str_replace(' ' ,'',_t('RSSHistory.TITLECHANGED', 'Title has changed:') . 'My Changed Title'),
+			array_map($cleanDiffOutput, $page->getDiffedChanges()->column('DiffTitle')),
 			'Detects published title changes'
 		);
 
 		$this->assertNotContains(
-			_t('RSSHistory.TITLECHANGED', 'Title has changed:') . 'My Unpublished Changed Title',
-			array_map('strip_tags', $page->getDiffedChanges()->column('DiffTitle')),
+			str_replace(' ' ,'',_t('RSSHistory.TITLECHANGED', 'Title has changed:') . 'My Unpublished Changed Title'),
+			array_map($cleanDiffOutput, $page->getDiffedChanges()->column('DiffTitle')),
 			'Ignores unpublished title changes'
 		);
 	}
