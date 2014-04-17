@@ -6,8 +6,39 @@ class VersionFeed_Controller extends Extension {
 		'changes',
 		'allchanges'
 	);
+	
+	/**
+	 * Content handler
+	 *
+	 * @var ContentFilter
+	 */
+	protected $contentFilter;
+	
+	/**
+	 * Sets the content filter
+	 * 
+	 * @param ContentFilter $contentFilter
+	 */
+	public function setContentFilter(ContentFilter $contentFilter) {
+		$this->contentFilter = $contentFilter;
+	}
+	
+	/**
+	 * Evaluates the result of the given callback
+	 * 
+	 * @param string $key Unique key for this
+	 * @param callable $callback Callback for evaluating the content
+	 * @return mixed Result of $callback()
+	 */
+	protected function filterContent($key, $callback) {
+		if($this->contentFilter) {
+			return $this->contentFilter->getContent($key, $callback);
+		} else {
+			return call_user_func($callback);
+		}
+	}
 
-	function onAfterInit() {
+	public function onAfterInit() {
 		// RSS feed for per-page changes.
 		if ($this->owner->PublicHistory) {
 			RSSFeed::linkToFeed($this->owner->Link() . 'changes', 
@@ -26,18 +57,15 @@ class VersionFeed_Controller extends Extension {
 	/**
 	 * Get page-specific changes in a RSS feed.
 	 */
-	function changes() {
-		if(!$this->owner->PublicHistory) throw new SS_HTTPResponse_Exception('Page history not viewable', 404);;
+	public function changes() {
+		if(!$this->owner->PublicHistory) throw new SS_HTTPResponse_Exception('Page history not viewable', 404);
 
 		// Cache the diffs to remove DOS possibility.
-		$cache = SS_Cache::factory('VersionFeed_Controller');
-		$cache->setOption('automatic_serialization', true);
+		$target = $this->owner;
 		$key = implode('_', array('changes', $this->owner->ID, $this->owner->Version));
-		$entries = $cache->load($key);
-		if(!$entries || isset($_GET['flush'])) {
-			$entries = $this->owner->getDiffedChanges();
-			$cache->save($entries, $key);
-		}
+		$entries = $this->filterContent($key, function() use ($target) {
+			return $target->getDiffedChanges();
+		});
 
 		// Generate the output.
 		$title = sprintf(_t('RSSHistory.SINGLEPAGEFEEDTITLE', 'Updates to %s page'), $this->owner->Title);		
@@ -49,42 +77,47 @@ class VersionFeed_Controller extends Extension {
 	/**
 	 * Get all changes from the site in a RSS feed.
 	 */
-	function allchanges() {
+	public function allchanges() {
 
-		$latestChanges = DB::query('SELECT * FROM "SiteTree_versions" WHERE "WasPublished"=\'1\' AND "CanViewType" IN (\'Anyone\', \'Inherit\') AND "ShowInSearch"=1 AND ("PublicHistory" IS NULL OR "PublicHistory" = \'1\') ORDER BY "LastEdited" DESC LIMIT 20');
+		$latestChanges = DB::query('
+			SELECT * FROM "SiteTree_versions"
+			WHERE "WasPublished" = \'1\'
+			AND "CanViewType" IN (\'Anyone\', \'Inherit\')
+			AND "ShowInSearch" = 1
+			AND ("PublicHistory" IS NULL OR "PublicHistory" = \'1\')
+			ORDER BY "LastEdited" DESC LIMIT 20'
+		);
 		$lastChange = $latestChanges->record();
 		$latestChanges->rewind();
 
 		if ($lastChange) {
 
 			// Cache the diffs to remove DOS possibility.
-			$member = Member::currentUser();
-			$cache = SS_Cache::factory('VersionFeed_Controller');
-			$cache->setOption('automatic_serialization', true);
-			$key = 'allchanges' . preg_replace('#[^a-zA-Z0-9_]#', '', $lastChange['LastEdited']) .
-				($member ? $member->ID : 'public');
-
-			$changeList = $cache->load($key);
-			if(!$changeList || isset($_GET['flush'])) {
-
+			$key = 'allchanges'
+				. preg_replace('#[^a-zA-Z0-9_]#', '', $lastChange['LastEdited'])
+				. (Member::currentUserID() ?: 'public');
+			$changeList = $this->filterContent($key, function() use ($latestChanges) {
 				$changeList = new ArrayList();
-
+				$canView = array();
 				foreach ($latestChanges as $record) {
+					
 					// Check if the page should be visible.
 					// WARNING: although we are providing historical details, we check the current configuration.
-					$page = SiteTree::get()->filter(array('ID'=>$record['RecordID']))->First();
-					if (!$page->canView(new Member())) continue;
+					$id = $record['RecordID'];
+					if(!isset($canView[$id])) {
+						$page = SiteTree::get()->byID($id);
+						$canView[$id] = $page && $page->canView(new Member());
+					}
+					if (!$canView[$id]) continue;
 
 					// Get the diff to the previous version.
 					$version = new Versioned_Version($record);
-
 					$changes = $version->getDiffedChanges($version->Version, false);
 					if ($changes && $changes->Count()) $changeList->push($changes->First());
 				}
 
-				$cache->save($changeList, $key);
-			}
-
+				return $changeList;
+			});
 		} else {
 			$changeList = new ArrayList();
 		}

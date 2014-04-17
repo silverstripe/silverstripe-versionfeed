@@ -3,7 +3,7 @@
 class VersionFeed extends SiteTreeExtension {
 	
 	private static $db = array(
-		'PublicHistory' => 'Boolean'
+		'PublicHistory' => 'Boolean(true)'
 	);
 
 	private static $defaults = array(
