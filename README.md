@@ -24,6 +24,8 @@ Or just clone/download the git repository into a subfolder (usually called "vers
 
 For usage instructions see [user manual](docs/en/user.md).
 
+For developer-level instructions see [developer manual](docs/en/developer.md).
+
 ## Contributing
 
 ### Translations

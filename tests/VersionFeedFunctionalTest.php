@@ -6,13 +6,6 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		'Page_Controller' => array('VersionFeed_Controller'),
 	);
 
-	public function setUp() {
-		parent::setUp();
-
-		$cache = SS_Cache::factory('VersionFeed_Controller');
-		$cache->clean(Zend_Cache::CLEANING_MODE_ALL);
-	}
-
 	public function testPublicHistory() {
 		$page = $this->createPageWithChanges(array('PublicHistory' => false));
 
