@@ -1,0 +1,25 @@
+---
+Name: versionedfeedconfig
+---
+SiteTree:
+  extensions:
+    - VersionFeed
+ContentController:
+  extensions:
+    - VersionFeed_Controller
+---
+Name: versionedfeedpolicy
+Only:
+  ModuleExists: policyfilter
+---
+ContentController:
+  extensions:
+    - FilteredExtension
+  dependencies:
+    ContentFilter: %$ContentFilter
+  filter_policy:
+    rate_lock_timeout: 10
+    rate_lock_byitem: true
+    rate_lock_byuserip: false
+    cache_lifetime: 3600
+    cache_factoryname: 'VersionFeed_Cache'
