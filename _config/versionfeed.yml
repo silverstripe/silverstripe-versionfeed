@@ -1,0 +1,18 @@
+---
+Name: versionedfeedconfig
+---
+Injector:
+  RateLimitFilter: \VersionFeed\Filters\RateLimitFilter
+  ContentFilter:
+    class: \VersionFeed\Filters\CachedContentFilter
+    constructor:
+      - %$RateLimitFilter
+SiteTree:
+  extensions:
+    - VersionFeed
+ContentController:
+  extensions:
+    - VersionFeed_Controller
+VersionFeed_Controller:
+  dependencies:
+    ContentFilter: %$ContentFilter

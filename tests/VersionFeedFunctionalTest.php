@@ -5,12 +5,30 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		'Page' => array('VersionFeed'),
 		'Page_Controller' => array('VersionFeed_Controller'),
 	);
+	
+	protected $userIP;
 
 	public function setUp() {
 		parent::setUp();
 
 		$cache = SS_Cache::factory('VersionFeed_Controller');
 		$cache->clean(Zend_Cache::CLEANING_MODE_ALL);
+		
+		$this->userIP = isset($_SERVER['HTTP_CLIENT_IP']) ? $_SERVER['HTTP_CLIENT_IP'] : null;
+		
+		Config::nest();
+		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_timeout', 20);
+		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_bypage', false);
+		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', false);
+		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_cooldown', false);
+	}
+	
+	public function tearDown() {
+		Config::unnest();
+		
+		$_SERVER['HTTP_CLIENT_IP'] = $this->userIP;
+		
+		parent::tearDown();
 	}
 
 	public function testPublicHistory() {
@@ -35,6 +53,59 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		$this->assertEquals(200, $response->getStatusCode());
 		$xml = simplexml_load_string($response->getBody());
 		$this->assertTrue((bool)$xml->channel->item);
+	}
+	
+	public function testRateLimiting() {
+
+		$page1 = $this->createPageWithChanges(array('PublicHistory' => true, 'Title' => 'Page1'));
+		$page2 = $this->createPageWithChanges(array('PublicHistory' => true, 'Title' => 'Page2'));
+		
+		// Artifically set cache lock
+		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', false);
+		$cache = SS_Cache::factory('VersionFeed_Controller');
+		$cache->setOption('automatic_serialization', true);
+		$cache->save(time() + 10, \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX);
+		
+		// Test normal hit
+		$response = $this->get($page1->RelativeLink('changes'));
+		$this->assertEquals(429, $response->getStatusCode());
+		$this->assertGreaterThan(0, $response->getHeader('Retry-After'));
+		$response = $this->get($page2->RelativeLink('changes'));
+		$this->assertEquals(429, $response->getStatusCode());
+		$this->assertGreaterThan(0, $response->getHeader('Retry-After'));
+		
+		// Test page specific lock
+		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_bypage', true);
+		$key = implode('_', array(
+			'changes',
+			$page1->ID,
+			Versioned::get_versionnumber_by_stage('SiteTree', 'Live', $page1->ID, false)
+		));
+		$key = \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX . '_' . md5($key);
+		$cache->save(time() + 10, $key);
+		$response = $this->get($page1->RelativeLink('changes'));
+		$this->assertEquals(429, $response->getStatusCode());
+		$this->assertGreaterThan(0, $response->getHeader('Retry-After'));
+		$response = $this->get($page2->RelativeLink('changes'));
+		$this->assertEquals(200, $response->getStatusCode());
+		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_bypage', false);
+		
+		// Test rate limit hit by IP
+		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', true);
+		$_SERVER['HTTP_CLIENT_IP'] = '127.0.0.1';
+		$cache->save(time() + 10, \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX . '_' . md5('127.0.0.1'));
+		$response = $this->get($page1->RelativeLink('changes'));
+		$this->assertEquals(429, $response->getStatusCode());
+		$this->assertGreaterThan(0, $response->getHeader('Retry-After'));
+		
+		// Test rate limit doesn't hit other IP
+		$_SERVER['HTTP_CLIENT_IP'] = '127.0.0.20';
+		$cache->save(time() + 10, \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX . '_' . md5('127.0.0.1'));
+		$response = $this->get($page1->RelativeLink('changes'));
+		$this->assertEquals(200, $response->getStatusCode());
+		
+		// Restore setting
+		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', false);
 	}
 
 	public function testContainsChangesForPageOnly() {
