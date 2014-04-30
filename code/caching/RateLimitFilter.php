@@ -34,6 +34,16 @@ class RateLimitFilter extends ContentFilter {
 	 * @var bool
 	 */
 	private static $lock_byuserip = false;
+
+	/**
+	 * Time duration (in sections) to deny further search requests after a successful search.
+	 * Search requests within this time period while another query is in progress will be
+	 * presented with a 429 (rate limit)
+	 *
+	 * @config
+	 * @var int
+	 */
+	private static $lock_cooldown = 2;
 	
 	/**
 	 * Cache key prefix
@@ -74,19 +84,29 @@ class RateLimitFilter extends ContentFilter {
 		// Generate result with rate limiting enabled
 		$limitKey = $this->getCacheKey($key);
 		$cache = $this->getCache();
-		if($cacheBegin = $cache->load($limitKey)) {
-			if(time() - $cacheBegin < $timeout) {
+		if($lockedUntil = $cache->load($limitKey)) {
+			if(time() < $lockedUntil) {
 				// Politely inform visitor of limit
 				$response = new \SS_HTTPResponse_Exception('Too Many Requests.', 429);
-				$response->getResponse()->addHeader('Retry-After', 1 + time() - $cacheBegin);
+				$response->getResponse()->addHeader('Retry-After', 1 + $lockedUntil - time());
 				throw $response;
 			}
 		}
 		
-		// Generate result with rate limit locked
-		$cache->save(time(), $limitKey);
+		// Apply rate limit
+		$cache->save(time() + $timeout, $limitKey);
+		
+		// Generate results
 		$result = parent::getContent($key, $callback);
-		$cache->remove($limitKey);
+
+		// Reset rate limit with optional cooldown
+		if($cooldown = \Config::inst()->get(get_class(), 'lock_cooldown')) {
+			// Set cooldown on successful query execution
+			$cache->save(time() + $cooldown, $limitKey);
+		} else {
+			// Without cooldown simply disable lock
+			$cache->remove($limitKey);
+		}
 		return $result;
 	}
 }

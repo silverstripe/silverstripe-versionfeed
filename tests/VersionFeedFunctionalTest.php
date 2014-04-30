@@ -20,6 +20,7 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_timeout', 20);
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_bypage', false);
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', false);
+		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_cooldown', false);
 	}
 	
 	public function tearDown() {
@@ -63,7 +64,7 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', false);
 		$cache = SS_Cache::factory('VersionFeed_Controller');
 		$cache->setOption('automatic_serialization', true);
-		$cache->save(time() - 2, \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX);
+		$cache->save(time() + 10, \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX);
 		
 		// Test normal hit
 		$response = $this->get($page1->RelativeLink('changes'));
@@ -81,7 +82,7 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 			Versioned::get_versionnumber_by_stage('SiteTree', 'Live', $page1->ID, false)
 		));
 		$key = \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX . '_' . md5($key);
-		$cache->save(time() - 2, $key);
+		$cache->save(time() + 10, $key);
 		$response = $this->get($page1->RelativeLink('changes'));
 		$this->assertEquals(429, $response->getStatusCode());
 		$this->assertGreaterThan(0, $response->getHeader('Retry-After'));
@@ -92,14 +93,14 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		// Test rate limit hit by IP
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', true);
 		$_SERVER['HTTP_CLIENT_IP'] = '127.0.0.1';
-		$cache->save(time() - 2, \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX . '_' . md5('127.0.0.1'));
+		$cache->save(time() + 10, \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX . '_' . md5('127.0.0.1'));
 		$response = $this->get($page1->RelativeLink('changes'));
 		$this->assertEquals(429, $response->getStatusCode());
 		$this->assertGreaterThan(0, $response->getHeader('Retry-After'));
 		
 		// Test rate limit doesn't hit other IP
 		$_SERVER['HTTP_CLIENT_IP'] = '127.0.0.20';
-		$cache->save(time() - 2, \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX . '_' . md5('127.0.0.1'));
+		$cache->save(time() + 10, \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX . '_' . md5('127.0.0.1'));
 		$response = $this->get($page1->RelativeLink('changes'));
 		$this->assertEquals(200, $response->getStatusCode());
 		
