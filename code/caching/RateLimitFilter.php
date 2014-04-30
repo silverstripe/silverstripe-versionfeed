@@ -1,5 +1,7 @@
 <?php
 
+namespace VersionFeed\Filters;
+
 /**
  * Provides rate limiting of execution of a callback
  */
@@ -13,18 +15,16 @@ class RateLimitFilter extends ContentFilter {
 	 * @config
 	 * @var int
 	 */
-	private static $lock_timeout = 10;
+	private static $lock_timeout = 5;
 	
 	/**
 	 * Determine if the cache generation should be locked on a per-page basis. If true, concurrent page versions
 	 * may be generated without rate interference.
-	 * 
-	 * Suggested to turn this to false on small sites that will not have many concurrent views of page versions
 	 *
 	 * @config
 	 * @var bool
 	 */
-	private static $lock_bypage = true;
+	private static $lock_bypage = false;
 	
 	/**
 	 * Determine if rate limiting should be applied independently to each IP address. This method is not
@@ -50,13 +50,13 @@ class RateLimitFilter extends ContentFilter {
 		$key = self::CACHE_PREFIX;
 		
 		// Add global identifier
-		if(Config::inst()->get(get_class(), 'lock_bypage'))  {
+		if(\Config::inst()->get(get_class(), 'lock_bypage'))  {
 			$key .= '_' . md5($itemkey);
 		}
 		
 		// Add user-specific identifier
-		if(Config::inst()->get(get_class(), 'lock_byuserip') && Controller::has_curr()) {
-			$ip = Controller::curr()->getRequest()->getIP();
+		if(\Config::inst()->get(get_class(), 'lock_byuserip') && \Controller::has_curr()) {
+			$ip = \Controller::curr()->getRequest()->getIP();
 			$key .= '_' . md5($ip);
 		}
 		
@@ -66,7 +66,7 @@ class RateLimitFilter extends ContentFilter {
 
 	public function getContent($key, $callback) {
 		// Bypass rate limiting if flushing, or timeout isn't set
-		$timeout = Config::inst()->get(get_class(), 'lock_timeout');
+		$timeout = \Config::inst()->get(get_class(), 'lock_timeout');
 		if(isset($_GET['flush']) || !$timeout) {
 			return parent::getContent($key, $callback);
 		}
@@ -77,7 +77,7 @@ class RateLimitFilter extends ContentFilter {
 		if($cacheBegin = $cache->load($limitKey)) {
 			if(time() - $cacheBegin < $timeout) {
 				// Politely inform visitor of limit
-				$response = new SS_HTTPResponse_Exception('Too Many Requests.', 429);
+				$response = new \SS_HTTPResponse_Exception('Too Many Requests.', 429);
 				$response->getResponse()->addHeader('Retry-After', 1 + time() - $cacheBegin);
 				throw $response;
 			}

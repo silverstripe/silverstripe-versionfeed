@@ -2,9 +2,9 @@
 Name: versionedfeedconfig
 ---
 Injector:
-  RateLimitFilter: RateLimitFilter
+  RateLimitFilter: \VersionFeed\Filters\RateLimitFilter
   ContentFilter:
-    class: CachedContentFilter
+    class: \VersionFeed\Filters\CachedContentFilter
     constructor:
       - %$RateLimitFilter
 SiteTree:

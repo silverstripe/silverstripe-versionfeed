@@ -1,5 +1,7 @@
 <?php
 
+namespace VersionFeed\Filters;
+
 /**
  * Conditionally executes a given callback, attempting to return the desired results
  * of its execution.
@@ -23,7 +25,7 @@ abstract class ContentFilter {
 	 * @return Zend_Cache_Frontend
 	 */
 	protected function getCache() {
-		$cache = SS_Cache::factory('VersionFeed_Controller');
+		$cache = \SS_Cache::factory('VersionFeed_Controller');
 		$cache->setOption('automatic_serialization', true);
 		return $cache;
 	}

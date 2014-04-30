@@ -36,20 +36,18 @@ Two filters are applied on top of one another:
 Either one of these can be replaced, added to, or removed, by adjusting the `VersionFeed_Controller.dependencies`
 config to point to a replacement (or no) filter.
 
-For large servers with a high level of traffic (more than 1 visits every 10 seconds) the default settings should
-be sufficient.
+For smaller servers where it's reasonable to apply a strict approach to rate limiting the default
+settings should be sufficient. The `RateLimitFilter.lock_bypage` config defaults to false, meaning that a
+single limit will be applied to all URLs. If set to true, then each URL will have its own rate limit,
+and on smaller servers with lots of concurrent requests this can still overwhelm capacity. This will
+also leave smaller servers vulnerable to DDoS attacks which target many URLs simultaneously.
+This config will have no effect on the `allchanges` method.
 
-For smaller servers where it's reasonable to apply a more strict approach to rate limiting, consider setting the
-`RateLimitFilter.lock_bypage` config to false, meaning that a single limit will be applied to all URLs.
-If left on true, then each URL will have its own rate limit, and on smaller servers with lots of
-concurrent requests this can still overwhelm capacity. This will also leave smaller servers vulnerable to DDoS
-attacks which target many URLs simultaneously. This config will have no effect on the `allchanges` method.
-
-`RateLimitFilter.lock_byuserip` can also be set to true in order to prevent requests from different users
+`RateLimitFilter.lock_byuserip` can be set to true in order to prevent requests from different users
 interfering with one another. However, this can provide an ineffective safeguard against malicious DDoS attacks
 which use multiple IP addresses.
 
-Another important variable is the `RateLimitFilter.lock_timeout` config, which is set to 10 seconds by default.
+Another important variable is the `RateLimitFilter.lock_timeout` config, which is set to 5 seconds by default.
 This should be increased on sites which may be slow to generate page versions, whether due to lower
 server capacity or volume of content (number of page versions). Requests to this page after the timeout
 will not trigger any rate limit safeguard, so you should be sure that this is set to an appropriate level.

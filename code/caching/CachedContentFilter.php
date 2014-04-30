@@ -1,5 +1,7 @@
 <?php
 
+namespace VersionFeed\Filters;
+
 /**
  * Caches results of a callback
  */

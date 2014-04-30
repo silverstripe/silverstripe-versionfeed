@@ -10,16 +10,16 @@ class VersionFeed_Controller extends Extension {
 	/**
 	 * Content handler
 	 *
-	 * @var ContentFilter
+	 * @var \VersionFeed\Filters\ContentFilter
 	 */
 	protected $contentFilter;
 	
 	/**
 	 * Sets the content filter
 	 * 
-	 * @param ContentFilter $contentFilter
+	 * @param \VersionFeed\Filters\ContentFilter $contentFilter
 	 */
-	public function setContentFilter(ContentFilter $contentFilter) {
+	public function setContentFilter(\VersionFeed\Filters\ContentFilter $contentFilter) {
 		$this->contentFilter = $contentFilter;
 	}
 	
