@@ -17,6 +17,9 @@ You can enable or disable the feed on a per-page basis by checking or unchecking
 Settings tab of each page. If a page has the Public History option, unchecked, it will not appear in the allchanges
 feed.
 
+The allchanges feed can also be disabled by unchecking the "All page changes" checkbox in the "Settings"
+section in the cms.
+
 #### Privacy
 
 A page's history will be completely visible when it has public history enabled, even if some updates were made when it

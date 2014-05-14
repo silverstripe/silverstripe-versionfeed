@@ -10,6 +10,9 @@ Injector:
 SiteTree:
   extensions:
     - VersionFeed
+SiteConfig:
+  extensions:
+    - VersionFeedSiteConfig
 ContentController:
   extensions:
     - VersionFeed_Controller

@@ -7,6 +7,15 @@
 Creating functions called `changes` or `allchanges` on any of your page types or controllers will cause confusion with
 the extensions defined on the extension.
 
+### Enabling / Disabling
+
+The `allchanges` feed can be disabled by setting the `VersionFeed.allchanges_enabled` config to false.
+
+Likewise, the `changes` feed for each page can be globally disabled by setting the `VersionFeed.changes_enabled`
+config to false. If this left true, then each page can still be individually disabled by unchecking the
+'Make History Public' checkbox in the CMS under page settings.
+See [user documentation on enabling / disabling](user.md#enabling--disabling).
+
 ### Default RSS action
 
 Templates can offer a "Subscribe" link with a link to the most relevant RSS feed. This will default to the changes feed
