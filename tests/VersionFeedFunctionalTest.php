@@ -17,7 +17,9 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		$this->userIP = isset($_SERVER['HTTP_CLIENT_IP']) ? $_SERVER['HTTP_CLIENT_IP'] : null;
 		
 		Config::nest();
-		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_timeout', 20);
+		// Disable caching and locking by default
+		Config::inst()->update('VersionFeed\Filters\CachedContentFilter', 'cache_enabled', false);
+		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_timeout', 0);
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_bypage', false);
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', false);
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_cooldown', false);
@@ -56,6 +58,9 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 	}
 	
 	public function testRateLimiting() {
+		// Re-enable locking just for this test
+		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_timeout', 20);
+		Config::inst()->update('VersionFeed\Filters\CachedContentFilter', 'cache_enabled', true);
 
 		$page1 = $this->createPageWithChanges(array('PublicHistory' => true, 'Title' => 'Page1'));
 		$page2 = $this->createPageWithChanges(array('PublicHistory' => true, 'Title' => 'Page2'));
@@ -106,6 +111,8 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		
 		// Restore setting
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', false);
+		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_timeout', 0);
+		Config::inst()->update('VersionFeed\Filters\CachedContentFilter', 'cache_enabled', false);
 	}
 
 	public function testContainsChangesForPageOnly() {
