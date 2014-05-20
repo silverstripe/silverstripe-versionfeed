@@ -17,7 +17,8 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		$this->userIP = isset($_SERVER['HTTP_CLIENT_IP']) ? $_SERVER['HTTP_CLIENT_IP'] : null;
 		
 		Config::nest();
-		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_timeout', 20);
+		// Disable locking by default
+		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_timeout', 0);
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_bypage', false);
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', false);
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_cooldown', false);
@@ -56,6 +57,8 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 	}
 	
 	public function testRateLimiting() {
+		// Re-enable locking just for this test
+		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_timeout', 20);
 
 		$page1 = $this->createPageWithChanges(array('PublicHistory' => true, 'Title' => 'Page1'));
 		$page2 = $this->createPageWithChanges(array('PublicHistory' => true, 'Title' => 'Page2'));
@@ -106,6 +109,7 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		
 		// Restore setting
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', false);
+		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_timeout', 0);
 	}
 
 	public function testContainsChangesForPageOnly() {
@@ -114,17 +118,17 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 
 		$response = $this->get($page1->RelativeLink('changes'));
 		$xml = simplexml_load_string($response->getBody());
-		$titles = array_map(function($item) {return (string)$item->title;}, $xml->xpath('//item'));
+		$titles = implode(', ', array_map(function($item) {return (string)$item->title;}, $xml->xpath('//item')));
 		// TODO Unclear if this should contain the original version
-		$this->assertContains('Changed: Page1', $titles);
-		$this->assertNotContains('Changed: Page2', $titles);
+		$this->assertContains('Page1', $titles);
+		$this->assertNotContains('Page2', $titles);
 
 		$response = $this->get($page2->RelativeLink('changes'));
 		$xml = simplexml_load_string($response->getBody());
-		$titles = array_map(function($item) {return (string)$item->title;}, $xml->xpath('//item'));
+		$titles = implode(', ', array_map(function($item) {return (string)$item->title;}, $xml->xpath('//item')));
 		// TODO Unclear if this should contain the original version
-		$this->assertNotContains('Changed: Page1', $titles);
-		$this->assertContains('Changed: Page2', $titles);
+		$this->assertNotContains('Page1', $titles);
+		$this->assertContains('Page2', $titles);
 	}
 
 	public function testContainsAllChangesForAllPages() {
