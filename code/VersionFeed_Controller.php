@@ -39,26 +39,18 @@ class VersionFeed_Controller extends Extension {
 	}
 
 	public function onAfterInit() {
-		// RSS feed for per-page changes.
-		if ($this->owner->PublicHistory) {
-			RSSFeed::linkToFeed($this->owner->Link() . 'changes', 
-				sprintf(
-					_t('RSSHistory.SINGLEPAGEFEEDTITLE', 'Updates to %s page'),
-					$this->owner->Title
-				)
-			);
-		}
-
+		$this->linkToPageRSSFeed();
 		$this->linkToAllSiteRSSFeed();
-
-		return $this;
 	}
 
 	/**
 	 * Get page-specific changes in a RSS feed.
 	 */
 	public function changes() {
-		if(!$this->owner->PublicHistory) throw new SS_HTTPResponse_Exception('Page history not viewable', 404);
+		// Check viewability of changes
+		if(!Config::inst()->get('VersionFeed', 'changes_enabled') || !$this->owner->PublicHistory) {
+			return $this->owner->httpError(404, 'Page history not viewable');
+		}
 
 		// Cache the diffs to remove DOS possibility.
 		$target = $this->owner;
@@ -78,6 +70,12 @@ class VersionFeed_Controller extends Extension {
 	 * Get all changes from the site in a RSS feed.
 	 */
 	public function allchanges() {
+		// Check viewability of allchanges
+		if(!Config::inst()->get('VersionFeed', 'allchanges_enabled')
+			|| !SiteConfig::current_site_config()->AllChangesEnabled
+		) {
+			return $this->owner->httpError(404, 'Global history not viewable');
+		}
 
 		$latestChanges = DB::query('
 			SELECT * FROM "SiteTree_versions"
@@ -127,8 +125,34 @@ class VersionFeed_Controller extends Extension {
 		$rss->setTemplate('Page_allchanges_rss');
 		return $rss->outputToBrowser();
 	}
+	
+	/**
+	 * Generates and embeds the RSS header link for the page-specific version rss feed
+	 */
+	public function linkToPageRSSFeed() {
+		if (!Config::inst()->get('VersionFeed', 'changes_enabled') || !$this->owner->PublicHistory) {
+			return;
+		}
+		
+		RSSFeed::linkToFeed(
+			$this->owner->Link('changes'),
+			sprintf(
+				_t('RSSHistory.SINGLEPAGEFEEDTITLE', 'Updates to %s page'),
+				$this->owner->Title
+			)
+		);
+	}
 
-	function linkToAllSiteRSSFeed() {
+	/**
+	 * Generates and embeds the RSS header link for the global version rss feed
+	 */
+	public function linkToAllSiteRSSFeed() {
+		if(!Config::inst()->get('VersionFeed', 'allchanges_enabled')
+			|| !SiteConfig::current_site_config()->AllChangesEnabled
+		) {
+			return;
+		}
+		
 		// RSS feed to all-site changes.
 		$title = Convert::raw2xml($this->linkToAllSitesRSSFeedTitle());
 		$url = $this->owner->getSiteRSSLink();
@@ -138,7 +162,7 @@ class VersionFeed_Controller extends Extension {
 			'" href="' . $url . '" />');
 	}
 
-	function linkToAllSitesRSSFeedTitle() {
+	public function linkToAllSitesRSSFeedTitle() {
 		return sprintf(_t('RSSHistory.SITEFEEDTITLE', 'Updates to %s'), SiteConfig::current_site_config()->Title);
 	}
 }

@@ -13,6 +13,22 @@ class VersionFeed extends SiteTreeExtension {
 	public function updateFieldLabels(&$labels) {
 		$labels['PublicHistory'] = _t('RSSHistory.LABEL', 'Make history public');
 	}
+	
+	/**
+	 * Enable the allchanges feed
+	 *
+	 * @config
+	 * @var bool
+	 */
+	private static $allchanges_enabled = true;
+	
+	/**
+	 * Enables RSS feed for page-specific changes
+	 * 
+	 * @config
+	 * @var bool
+	 */
+	private static $changes_enabled = true;
 
 	/**
 	 * Compile a list of changes to the current page, excluding non-published and explicitly secured versions.
@@ -84,6 +100,8 @@ class VersionFeed extends SiteTreeExtension {
 	}
 
 	public function updateSettingsFields(FieldList $fields) {
+		if(!Config::inst()->get(get_class(), 'changes_enabled')) return;
+		
 		// Add public history field.
 		$fields->addFieldToTab('Root.Settings', $publicHistory = new FieldGroup(
 			new CheckboxField('PublicHistory', $this->owner->fieldLabel('PublicHistory')
@@ -111,10 +129,16 @@ class VersionFeed extends SiteTreeExtension {
 
 	public function getSiteRSSLink() {
 		// TODO: This link should be from the homepage, not this page.
-		return $this->owner->Link('allchanges');
+		if(Config::inst()->get(get_class(), 'allchanges_enabled')
+			&& SiteConfig::current_site_config()->AllChangesEnabled
+		) {
+			return $this->owner->Link('allchanges');
+		}
 	}
 
 	public function getDefaultRSSLink() {
-		if ($this->owner->PublicHistory) return $this->owner->Link('changes');
+		if(Config::inst()->get(get_class(), 'changes_enabled') && $this->owner->PublicHistory) {
+			return $this->owner->Link('changes');
+		}
 	}
 }

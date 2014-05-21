@@ -178,5 +178,38 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 
 		return $page;
 	}
+	
+	/**
+	 * Tests response code for globally disabled feedss
+	 */
+	public function testFeedViewability() {
+		$siteConfig = SiteConfig::current_site_config();
+		
+		// Nested loop through each configuration
+		foreach(array(true, false) as $publicHistory_Page) {
+			$page = $this->createPageWithChanges(array('PublicHistory' => $publicHistory_Page, 'Title' => 'Page'));
+			
+			// Test requests to 'changes' action
+			foreach(array(true, false) as $publicHistory_Config) {
+				Config::inst()->update('VersionFeed', 'changes_enabled', $publicHistory_Config);
+				$expectedResponse = $publicHistory_Page && $publicHistory_Config ? 200 : 404;
+				$response = $this->get($page->RelativeLink('changes'));
+				$this->assertEquals($expectedResponse, $response->getStatusCode());
+			}
+			
+			// Test requests to 'allchanges' action on each page
+			foreach(array(true, false) as $allChanges_Config) {
+				foreach(array(true, false) as $allChanges_SiteConfig) {
+					Config::inst()->update('VersionFeed', 'allchanges_enabled', $allChanges_Config);
+					$siteConfig->AllChangesEnabled = $allChanges_SiteConfig;
+					$siteConfig->write();
+					
+					$expectedResponse = $allChanges_Config && $allChanges_SiteConfig ? 200 : 404;
+					$response = $this->get($page->RelativeLink('allchanges'));
+					$this->assertEquals($expectedResponse, $response->getStatusCode());
+				}
+			}
+		}
+	}
 
 }
