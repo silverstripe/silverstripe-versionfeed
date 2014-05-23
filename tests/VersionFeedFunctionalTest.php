@@ -183,7 +183,6 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 	 * Tests response code for globally disabled feedss
 	 */
 	public function testFeedViewability() {
-		$siteConfig = SiteConfig::current_site_config();
 		
 		// Nested loop through each configuration
 		foreach(array(true, false) as $publicHistory_Page) {
@@ -201,6 +200,7 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 			foreach(array(true, false) as $allChanges_Config) {
 				foreach(array(true, false) as $allChanges_SiteConfig) {
 					Config::inst()->update('VersionFeed', 'allchanges_enabled', $allChanges_Config);
+					$siteConfig = SiteConfig::current_site_config();
 					$siteConfig->AllChangesEnabled = $allChanges_SiteConfig;
 					$siteConfig->write();
 					
