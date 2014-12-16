@@ -6,26 +6,26 @@ class VersionFeed_Controller extends Extension {
 		'changes',
 		'allchanges'
 	);
-	
+
 	/**
 	 * Content handler
 	 *
 	 * @var \VersionFeed\Filters\ContentFilter
 	 */
 	protected $contentFilter;
-	
+
 	/**
 	 * Sets the content filter
-	 * 
+	 *
 	 * @param \VersionFeed\Filters\ContentFilter $contentFilter
 	 */
 	public function setContentFilter(\VersionFeed\Filters\ContentFilter $contentFilter) {
 		$this->contentFilter = $contentFilter;
 	}
-	
+
 	/**
 	 * Evaluates the result of the given callback
-	 * 
+	 *
 	 * @param string $key Unique key for this
 	 * @param callable $callback Callback for evaluating the content
 	 * @return mixed Result of $callback()
@@ -48,7 +48,10 @@ class VersionFeed_Controller extends Extension {
 	 */
 	public function changes() {
 		// Check viewability of changes
-		if(!Config::inst()->get('VersionFeed', 'changes_enabled') || !$this->owner->PublicHistory) {
+		if(!Config::inst()->get('VersionFeed', 'changes_enabled')
+			|| !$this->owner->PublicHistory
+			|| $this->owner->ID == -1
+		) {
 			return $this->owner->httpError(404, 'Page history not viewable');
 		}
 
@@ -60,7 +63,7 @@ class VersionFeed_Controller extends Extension {
 		});
 
 		// Generate the output.
-		$title = sprintf(_t('RSSHistory.SINGLEPAGEFEEDTITLE', 'Updates to %s page'), $this->owner->Title);		
+		$title = sprintf(_t('RSSHistory.SINGLEPAGEFEEDTITLE', 'Updates to %s page'), $this->owner->Title);
 		$rss = new RSSFeed($entries, $this->owner->request->getURL(), $title, '', 'Title', '', null);
 		$rss->setTemplate('Page_changes_rss');
 		return $rss->outputToBrowser();
@@ -98,7 +101,7 @@ class VersionFeed_Controller extends Extension {
 				$changeList = new ArrayList();
 				$canView = array();
 				foreach ($latestChanges as $record) {
-					
+
 					// Check if the page should be visible.
 					// WARNING: although we are providing historical details, we check the current configuration.
 					$id = $record['RecordID'];
@@ -125,7 +128,7 @@ class VersionFeed_Controller extends Extension {
 		$rss->setTemplate('Page_allchanges_rss');
 		return $rss->outputToBrowser();
 	}
-	
+
 	/**
 	 * Generates and embeds the RSS header link for the page-specific version rss feed
 	 */
@@ -133,7 +136,7 @@ class VersionFeed_Controller extends Extension {
 		if (!Config::inst()->get('VersionFeed', 'changes_enabled') || !$this->owner->PublicHistory) {
 			return;
 		}
-		
+
 		RSSFeed::linkToFeed(
 			$this->owner->Link('changes'),
 			sprintf(
@@ -152,7 +155,7 @@ class VersionFeed_Controller extends Extension {
 		) {
 			return;
 		}
-		
+
 		// RSS feed to all-site changes.
 		$title = Convert::raw2xml($this->linkToAllSitesRSSFeedTitle());
 		$url = $this->owner->getSiteRSSLink();
