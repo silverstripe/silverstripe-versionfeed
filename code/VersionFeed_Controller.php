@@ -50,7 +50,7 @@ class VersionFeed_Controller extends Extension {
 		// Check viewability of changes
 		if(!Config::inst()->get('VersionFeed', 'changes_enabled')
 			|| !$this->owner->PublicHistory
-			|| $this->owner->Version == -1
+			|| $this->owner->Version == ''
 		) {
 			return $this->owner->httpError(404, 'Page history not viewable');
 		}
