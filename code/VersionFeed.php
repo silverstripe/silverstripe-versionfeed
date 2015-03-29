@@ -71,24 +71,28 @@ class VersionFeed extends SiteTreeExtension {
 		foreach ($versions as $version) {
 			$changed = false;
 
+			// Check if we have something to compare with.
 			if (isset($previous)) {
-				// We have something to compare with.
-				$diff = $this->owner->compareVersions($version->Version, $previous->Version);
 
 				// Produce the diff fields for use in the template.
 				if ($version->Title != $previous->Title) {
+					$diffTitle = Diff::compareHTML($version->Title, $previous->Title);
+
 					$version->DiffTitle = new HTMLText();
 					$version->DiffTitle->setValue(
 						sprintf(
-							'<div><em>%s</em>' . $diff->Title . '</div>',
+							'<div><em>%s</em> ' . $diffTitle . '</div>',
 							_t('RSSHistory.TITLECHANGED', 'Title has changed:')
 						)
 					);
 					$changed = true;
 				}
+
 				if ($version->Content != $previous->Content) {
+					$diffContent = Diff::compareHTML($version->Content, $previous->Content);
+
 					$version->DiffContent = new HTMLText();
-					$version->DiffContent->setValue('<div>'.$diff->obj('Content')->forTemplate().'</div>');
+					$version->DiffContent->setValue('<div>'.$diffContent.'</div>');
 					$changed = true;
 				}
 
@@ -112,7 +116,7 @@ class VersionFeed extends SiteTreeExtension {
 		if ($previous && $versions->count()<$qLimit) {
 			$first = clone($previous);
 			$first->DiffContent = new HTMLText();
-			$first->DiffContent->setValue('<div>' . $first->obj('Content')->forTemplate() . '</div>');
+			$first->DiffContent->setValue('<div>' . $first->Content . '</div>');
 			// Copy the link so it can be cached by SS_Cache.
 			$first->GeneratedLink = $first->AbsoluteLink();
 			$changeList->push($first);
