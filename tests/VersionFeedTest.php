@@ -39,13 +39,13 @@ class VersionFeedTest extends SapphireTest {
 
 		$this->assertContains(
 			str_replace(' ' ,'',_t('RSSHistory.TITLECHANGED', 'Title has changed:') . 'My Changed Title'),
-			array_map($cleanDiffOutput, $page->getDiffedChanges()->column('DiffTitle')),
+			array_map($cleanDiffOutput, $page->getDiffList()->column('DiffTitle')),
 			'Detects published title changes'
 		);
 
 		$this->assertNotContains(
 			str_replace(' ' ,'',_t('RSSHistory.TITLECHANGED', 'Title has changed:') . 'My Unpublished Changed Title'),
-			array_map($cleanDiffOutput, $page->getDiffedChanges()->column('DiffTitle')),
+			array_map($cleanDiffOutput, $page->getDiffList()->column('DiffTitle')),
 			'Ignores unpublished title changes'
 		);
 	}
