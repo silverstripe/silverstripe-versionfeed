@@ -13,7 +13,7 @@ class VersionFeed extends SiteTreeExtension {
 	public function updateFieldLabels(&$labels) {
 		$labels['PublicHistory'] = _t('RSSHistory.LABEL', 'Make history public');
 	}
-	
+
 	/**
 	 * Enable the allchanges feed
 	 *
@@ -21,7 +21,15 @@ class VersionFeed extends SiteTreeExtension {
 	 * @var bool
 	 */
 	private static $allchanges_enabled = true;
-	
+
+	/**
+	 * Allchanges feed limit of items.
+	 *
+	 * @config
+	 * @var int
+	 */
+	private static $allchanges_limit = 20;
+
 	/**
 	 * Enables RSS feed for page-specific changes
 	 * 
@@ -31,19 +39,30 @@ class VersionFeed extends SiteTreeExtension {
 	private static $changes_enabled = true;
 
 	/**
+	 * Changes feed limit of items.
+	 *
+	 * @config
+	 * @var int
+	 */
+	private static $changes_limit = 100;
+
+	/**
 	 * Compile a list of changes to the current page, excluding non-published and explicitly secured versions.
 	 *
 	 * @param int $highestVersion Top version number to consider.
-	 * @param boolean $fullHistory Whether to get the full change history or just the previous version.
+	 * @param int $limit Limit to the amount of items returned.
 	 *
 	 * @returns ArrayList List of cleaned records.
 	 */
-	public function getDiffedChanges($highestVersion = null, $fullHistory = true) {
+	public function getDiffList($highestVersion = null, $limit = 100) {
 		// This can leak secured content if it was protected via inherited setting.
 		// For now the users will need to be aware about this shortcoming.
 		$offset = $highestVersion ? "AND \"SiteTree_versions\".\"Version\"<='".(int)$highestVersion."'" : '';
-		$limit = $fullHistory ? null : 2;
-		$versions = $this->owner->allVersions("\"WasPublished\"='1' AND \"CanViewType\" IN ('Anyone', 'Inherit') $offset", "\"LastEdited\" DESC", $limit);
+		// Get just enough elements for diffing. We need one more than desired to have something to compare to.
+		$qLimit = (int)$limit + 1;
+		$versions = $this->owner->allVersions(
+			"\"WasPublished\"='1' AND \"CanViewType\" IN ('Anyone', 'Inherit') $offset", "\"LastEdited\" DESC", $qLimit
+		);
 
 		// Process the list to add the comparisons.
 		$changeList = new ArrayList();
@@ -87,16 +106,52 @@ class VersionFeed extends SiteTreeExtension {
 			$previous = $version;
 		}
 
-		// Push the first version on to the list - only if we're looking at the full history or if it's the first
-		// version in the version history.
-		if ($previous && ($fullHistory || $versions->count() == 1)) {
+		// Make sure enough diff items have been generated to satisfy the $limit. If we ran out, add the final,
+		// non-diffed item (the initial version). This will also work for a single-diff request: if we are requesting
+		// a diff on the initial version we will just get that version, verbatim.
+		if ($previous && $versions->count()<$qLimit) {
 			$first = clone($previous);
 			$first->DiffContent = new HTMLText();
 			$first->DiffContent->setValue('<div>' . $first->obj('Content')->forTemplate() . '</div>');
+			// Copy the link so it can be cached by SS_Cache.
+			$first->GeneratedLink = $first->AbsoluteLink();
 			$changeList->push($first);
 		}
 
 		return $changeList;
+	}
+
+	/**
+	 * Return a single diff representing this version.
+	 * Returns the initial version if there is nothing to compare to.
+	 *
+	 * @returns DataObject Object with relevant fields diffed.
+	 */
+	public function getDiff() {
+		$changes = $this->getDiffList($this->owner->Version, 1);
+		if ($changes && $changes->Count()) {
+			return $changes->First();
+		}
+
+		return null;
+	}
+
+	/**
+	 * Compile a list of changes to the current page, excluding non-published and explicitly secured versions.
+	 *
+	 * @deprecated 2.0.0 Use VersionFeed::getDiffList instead
+	 *
+	 * @param int $highestVersion Top version number to consider.
+	 * @param boolean $fullHistory Set to true to get the full change history, set to false for a single diff.
+	 * @param int $limit Limit to the amount of items returned.
+	 *
+	 * @returns ArrayList List of cleaned records.
+	 */
+	public function getDiffedChanges($highestVersion = null, $fullHistory = true, $limit = 100) {
+		return $this->getDiffList(
+			$highestVersion,
+			$fullHistory ? $limit : 1
+		);
 	}
 
 	public function updateSettingsFields(FieldList $fields) {

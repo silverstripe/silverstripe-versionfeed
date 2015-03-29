@@ -56,11 +56,11 @@ class VersionFeed_Controller extends Extension {
 		$target = $this->owner;
 		$key = implode('_', array('changes', $this->owner->ID, $this->owner->Version));
 		$entries = $this->filterContent($key, function() use ($target) {
-			return $target->getDiffedChanges();
+			return $target->getDiffList(null, Config::inst()->get('VersionFeed', 'changes_limit'));
 		});
 
 		// Generate the output.
-		$title = sprintf(_t('RSSHistory.SINGLEPAGEFEEDTITLE', 'Updates to %s page'), $this->owner->Title);		
+		$title = sprintf(_t('RSSHistory.SINGLEPAGEFEEDTITLE', 'Updates to %s page'), $this->owner->Title);
 		$rss = new RSSFeed($entries, $this->owner->request->getURL(), $title, '', 'Title', '', null);
 		$rss->setTemplate('Page_changes_rss');
 		return $rss->outputToBrowser();
@@ -77,13 +77,14 @@ class VersionFeed_Controller extends Extension {
 			return $this->owner->httpError(404, 'Global history not viewable');
 		}
 
+		$limit = (int)Config::inst()->get('VersionFeed', 'allchanges_limit');
 		$latestChanges = DB::query('
 			SELECT * FROM "SiteTree_versions"
 			WHERE "WasPublished" = \'1\'
 			AND "CanViewType" IN (\'Anyone\', \'Inherit\')
 			AND "ShowInSearch" = 1
 			AND ("PublicHistory" IS NULL OR "PublicHistory" = \'1\')
-			ORDER BY "LastEdited" DESC LIMIT 20'
+			ORDER BY "LastEdited" DESC LIMIT ' . $limit
 		);
 		$lastChange = $latestChanges->record();
 		$latestChanges->rewind();
@@ -110,8 +111,9 @@ class VersionFeed_Controller extends Extension {
 
 					// Get the diff to the previous version.
 					$version = new Versioned_Version($record);
-					$changes = $version->getDiffedChanges($version->Version, false);
-					if ($changes && $changes->Count()) $changeList->push($changes->First());
+					if ($diff = $version->getDiff()) {
+						$changeList->push($diff);
+					}
 				}
 
 				return $changeList;
