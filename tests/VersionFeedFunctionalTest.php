@@ -213,3 +213,4 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 	}
 
 }
+
