@@ -2,7 +2,7 @@
 	"name": "silverstripe/versionfeed",
 	"description": "Adds RSS feeds of content changes to SilverStripe",
 	"type": "silverstripe-module",
-	"keywords": ["silverstripe", "rss", "feed"],
+	"keywords": ["silverstripe", "rss", "feed", "cwp"],
 	"license": "BSD-3-Clause",
 	"authors": [
 		{
