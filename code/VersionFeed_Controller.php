@@ -163,7 +163,7 @@ class VersionFeed_Controller extends Extension {
 		$url = $this->owner->getSiteRSSLink();
 
 		Requirements::insertHeadTags(
-			'<link rel="alternate nofollow" type="application/rss+xml" title="' . $title .
+			'<link rel="alternate" type="application/rss+xml" title="' . $title .
 			'" href="' . $url . '" />');
 	}
 
