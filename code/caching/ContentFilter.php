@@ -14,6 +14,14 @@ abstract class ContentFilter {
 	 * @var ContentFilter
 	 */
 	protected $nestedContentFilter;
+
+	/**
+	 * Cache lifetime
+	 *
+	 * @config
+	 * @var int
+	 */
+	private static $cache_lifetime = 300;
 	
 	public function __construct($nestedContentFilter = null) {
 		$this->nestedContentFilter = $nestedContentFilter;
@@ -27,6 +35,10 @@ abstract class ContentFilter {
 	protected function getCache() {
 		$cache = \SS_Cache::factory('VersionFeed_Controller');
 		$cache->setOption('automatic_serialization', true);
+
+		// Map 0 to null for unlimited lifetime
+		$lifetime = \Config::inst()->get(get_class($this), 'cache_lifetime') ?: null;
+		$cache->setLifetime($lifetime);
 		return $cache;
 	}
 	

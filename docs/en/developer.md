@@ -60,3 +60,7 @@ Another important variable is the `RateLimitFilter.lock_timeout` config, which i
 This should be increased on sites which may be slow to generate page versions, whether due to lower
 server capacity or volume of content (number of page versions). Requests to this page after the timeout
 will not trigger any rate limit safeguard, so you should be sure that this is set to an appropriate level.
+
+You can set the `ContentFilter.cache_lifetime` config in order to control the maximum age of the cache.
+This is an integer value in seconds, and defaults to 300 (five minutes). Set it to 0 or null to make this
+cache unlimited.
