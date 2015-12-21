@@ -22,7 +22,7 @@ Or just clone/download the git repository into a subfolder (usually called "vers
 
 ## Usage
 
-For usage instructions see [user manual](docs/en/user.md).
+For usage instructions see [user manual](docs/en/userguide/index.md).
 
 ## Contributing
 
