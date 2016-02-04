@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.1]
+
+* Updated userguide documentation
+* Added standard Scrutinizer config	
+* Added standard code of conduct
+* Added standard gitattributes
+* Added standard editor config
+* Added standard license
+* Added standard Travis config
+* Updated license year
+* Updated translations
+
 ## [1.2.0]
 
 * Changelog added.
