@@ -61,7 +61,9 @@ class VersionFeed extends SiteTreeExtension {
 		// Get just enough elements for diffing. We need one more than desired to have something to compare to.
 		$qLimit = (int)$limit + 1;
 		$versions = $this->owner->allVersions(
-			"\"WasPublished\"='1' AND \"CanViewType\" IN ('Anyone', 'Inherit') $offset", "\"LastEdited\" DESC", $qLimit
+			"\"WasPublished\"='1' AND \"CanViewType\" IN ('Anyone', 'Inherit') $offset",
+			"\"SiteTree\".\"LastEdited\" DESC, \"SiteTree\".\"ID\" DESC",
+			$qLimit
 		);
 
 		// Process the list to add the comparisons.
