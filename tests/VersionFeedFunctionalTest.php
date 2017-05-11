@@ -1,11 +1,12 @@
 <?php
 class VersionFeedFunctionalTest extends FunctionalTest {
+    protected $usesDatabase = true;
 
 	protected $requiredExtensions = array(
 		'Page' => array('VersionFeed'),
 		'Page_Controller' => array('VersionFeed_Controller'),
 	);
-	
+
 	protected $userIP;
 
 	public function setUp() {
@@ -13,10 +14,14 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 
 		$cache = SS_Cache::factory('VersionFeed_Controller');
 		$cache->clean(Zend_Cache::CLEANING_MODE_ALL);
-		
+
 		$this->userIP = isset($_SERVER['HTTP_CLIENT_IP']) ? $_SERVER['HTTP_CLIENT_IP'] : null;
-		
+
 		Config::nest();
+        // Enable history by default
+        Config::inst()->update('VersionFeed', 'changes_enabled', true);
+        Config::inst()->update('VersionFeed', 'allchanges_enabled', true);
+
 		// Disable caching and locking by default
 		Config::inst()->update('VersionFeed\Filters\CachedContentFilter', 'cache_enabled', false);
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_timeout', 0);
@@ -24,12 +29,12 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', false);
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_cooldown', false);
 	}
-	
+
 	public function tearDown() {
 		Config::unnest();
-		
+
 		$_SERVER['HTTP_CLIENT_IP'] = $this->userIP;
-		
+
 		parent::tearDown();
 	}
 
@@ -45,7 +50,7 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		$this->assertFalse((bool)$xml->channel->item);
 
 		$page = $this->createPageWithChanges(array('PublicHistory' => true));
-		
+
 		$response = $this->get($page->RelativeLink('changes'));
 		$this->assertEquals(200, $response->getStatusCode());
 		$xml = simplexml_load_string($response->getBody());
@@ -56,7 +61,7 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		$xml = simplexml_load_string($response->getBody());
 		$this->assertTrue((bool)$xml->channel->item);
 	}
-	
+
 	public function testRateLimiting() {
 		// Re-enable locking just for this test
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_timeout', 20);
@@ -64,13 +69,13 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 
 		$page1 = $this->createPageWithChanges(array('PublicHistory' => true, 'Title' => 'Page1'));
 		$page2 = $this->createPageWithChanges(array('PublicHistory' => true, 'Title' => 'Page2'));
-		
+
 		// Artifically set cache lock
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', false);
 		$cache = SS_Cache::factory('VersionFeed_Controller');
 		$cache->setOption('automatic_serialization', true);
 		$cache->save(time() + 10, \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX);
-		
+
 		// Test normal hit
 		$response = $this->get($page1->RelativeLink('changes'));
 		$this->assertEquals(429, $response->getStatusCode());
@@ -78,7 +83,7 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		$response = $this->get($page2->RelativeLink('changes'));
 		$this->assertEquals(429, $response->getStatusCode());
 		$this->assertGreaterThan(0, $response->getHeader('Retry-After'));
-		
+
 		// Test page specific lock
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_bypage', true);
 		$key = implode('_', array(
@@ -94,7 +99,7 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		$response = $this->get($page2->RelativeLink('changes'));
 		$this->assertEquals(200, $response->getStatusCode());
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_bypage', false);
-		
+
 		// Test rate limit hit by IP
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', true);
 		$_SERVER['HTTP_CLIENT_IP'] = '127.0.0.1';
@@ -102,13 +107,13 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		$response = $this->get($page1->RelativeLink('changes'));
 		$this->assertEquals(429, $response->getStatusCode());
 		$this->assertGreaterThan(0, $response->getHeader('Retry-After'));
-		
+
 		// Test rate limit doesn't hit other IP
 		$_SERVER['HTTP_CLIENT_IP'] = '127.0.0.20';
 		$cache->save(time() + 10, \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX . '_' . md5('127.0.0.1'));
 		$response = $this->get($page1->RelativeLink('changes'));
 		$this->assertEquals(200, $response->getStatusCode());
-		
+
 		// Restore setting
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', false);
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_timeout', 0);
@@ -142,12 +147,12 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		$xml = simplexml_load_string($response->getBody());
 		$titles = array_map(function($item) {return (string)$item->title;}, $xml->xpath('//item'));
 		$this->assertContains('Page1', $titles);
-		$this->assertContains('Page2', $titles);	
+		$this->assertContains('Page2', $titles);
 	}
 
 	protected function createPageWithChanges($seed = null) {
 		$page = new Page();
-		
+
 		$seed = array_merge(array(
 			'Title' => 'My Title',
 			'Content' => 'My Content'
@@ -178,16 +183,16 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 
 		return $page;
 	}
-	
+
 	/**
 	 * Tests response code for globally disabled feedss
 	 */
 	public function testFeedViewability() {
-		
+
 		// Nested loop through each configuration
 		foreach(array(true, false) as $publicHistory_Page) {
 			$page = $this->createPageWithChanges(array('PublicHistory' => $publicHistory_Page, 'Title' => 'Page'));
-			
+
 			// Test requests to 'changes' action
 			foreach(array(true, false) as $publicHistory_Config) {
 				Config::inst()->update('VersionFeed', 'changes_enabled', $publicHistory_Config);
@@ -195,7 +200,7 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 				$response = $this->get($page->RelativeLink('changes'));
 				$this->assertEquals($expectedResponse, $response->getStatusCode());
 			}
-			
+
 			// Test requests to 'allchanges' action on each page
 			foreach(array(true, false) as $allChanges_Config) {
 				foreach(array(true, false) as $allChanges_SiteConfig) {
@@ -203,7 +208,7 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 					$siteConfig = SiteConfig::current_site_config();
 					$siteConfig->AllChangesEnabled = $allChanges_SiteConfig;
 					$siteConfig->write();
-					
+
 					$expectedResponse = $allChanges_Config && $allChanges_SiteConfig ? 200 : 404;
 					$response = $this->get($page->RelativeLink('allchanges'));
 					$this->assertEquals($expectedResponse, $response->getStatusCode());
