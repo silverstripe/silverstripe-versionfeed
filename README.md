@@ -1,6 +1,6 @@
 # Version Feed
 
-[![Build Status](https://secure.travis-ci.org/silverstripe-labs/silverstripe-versionfeed.png)](http://travis-ci.org/silverstripe-labs/silverstripe-versionfeed)
+[![Build Status](https://secure.travis-ci.org/silverstripe/silverstripe-versionfeed.png)](http://travis-ci.org/silverstripe/silverstripe-versionfeed)
 
 ## Overview
 
