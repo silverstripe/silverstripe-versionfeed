@@ -1,5 +1,28 @@
 <?php
 
+namespace SilverStripe\VersionFeed;
+
+
+
+use Diff;
+use HTMLText;
+
+
+
+
+
+
+use SilverStripe\ORM\ArrayList;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Forms\CheckboxField;
+use SilverStripe\Forms\FieldGroup;
+use SilverStripe\Forms\LiteralField;
+use SilverStripe\SiteConfig\SiteConfig;
+use SilverStripe\CMS\Model\SiteTreeExtension;
+
+
+
 class VersionFeed extends SiteTreeExtension {
 	
 	private static $db = array(

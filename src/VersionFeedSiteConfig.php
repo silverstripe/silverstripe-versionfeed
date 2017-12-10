@@ -1,5 +1,21 @@
 <?php
 
+namespace SilverStripe\VersionFeed;
+
+
+
+
+
+
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\VersionFeed\VersionFeed;
+use SilverStripe\Forms\CheckboxField;
+use SilverStripe\Forms\FieldGroup;
+use SilverStripe\ORM\DataExtension;
+
+
+
 /**
  * Allows global configuration of all changes
  */
@@ -17,8 +33,8 @@ class VersionFeedSiteConfig extends DataExtension {
 		$labels['AllChangesEnabled'] = _t('VersionFeedSiteConfig.ALLCHANGESLABEL', 'Make global changes feed public');
 	}
 	
-	public function updateCMSFields(\FieldList $fields) {
-		if(!Config::inst()->get('VersionFeed', 'allchanges_enabled')) return;
+	public function updateCMSFields(FieldList $fields) {
+		if(!Config::inst()->get(VersionFeed::class, 'allchanges_enabled')) return;
 
 		$fields->addFieldToTab('Root.Access',
 			FieldGroup::create(new CheckboxField('AllChangesEnabled', $this->owner->fieldLabel('AllChangesEnabled')))

@@ -1,10 +1,29 @@
 <?php
+
+namespace SilverStripe\VersionFeed\Tests;
+
+
+use SS_Cache;
+use Zend_Cache;
+
+
+use Page;
+
+use SilverStripe\VersionFeed\VersionFeed;
+use SilverStripe\VersionFeed\VersionFeedController;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Versioned\Versioned;
+use SilverStripe\SiteConfig\SiteConfig;
+use SilverStripe\Dev\FunctionalTest;
+
+
 class VersionFeedFunctionalTest extends FunctionalTest {
     protected $usesDatabase = true;
 
 	protected $requiredExtensions = array(
-		'Page' => array('VersionFeed'),
-		'Page_Controller' => array('VersionFeed_Controller'),
+		'Page' => array(VersionFeed::class),
+		'Page_Controller' => array(VersionFeedController::class),
 	);
 
 	protected $userIP;
@@ -12,15 +31,15 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 	public function setUp() {
 		parent::setUp();
 
-		$cache = SS_Cache::factory('VersionFeed_Controller');
+		$cache = SS_Cache::factory(VersionFeedController::class);
 		$cache->clean(Zend_Cache::CLEANING_MODE_ALL);
 
 		$this->userIP = isset($_SERVER['HTTP_CLIENT_IP']) ? $_SERVER['HTTP_CLIENT_IP'] : null;
 
 		Config::nest();
         // Enable history by default
-        Config::inst()->update('VersionFeed', 'changes_enabled', true);
-        Config::inst()->update('VersionFeed', 'allchanges_enabled', true);
+        Config::inst()->update(VersionFeed::class, 'changes_enabled', true);
+        Config::inst()->update(VersionFeed::class, 'allchanges_enabled', true);
 
 		// Disable caching and locking by default
 		Config::inst()->update('VersionFeed\Filters\CachedContentFilter', 'cache_enabled', false);
@@ -72,7 +91,7 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 
 		// Artifically set cache lock
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', false);
-		$cache = SS_Cache::factory('VersionFeed_Controller');
+		$cache = SS_Cache::factory(VersionFeedController::class);
 		$cache->setOption('automatic_serialization', true);
 		$cache->save(time() + 10, \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX);
 
@@ -89,7 +108,7 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		$key = implode('_', array(
 			'changes',
 			$page1->ID,
-			Versioned::get_versionnumber_by_stage('SiteTree', 'Live', $page1->ID, false)
+			Versioned::get_versionnumber_by_stage(SiteTree::class, 'Live', $page1->ID, false)
 		));
 		$key = \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX . '_' . md5($key);
 		$cache->save(time() + 10, $key);
@@ -195,7 +214,7 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 
 			// Test requests to 'changes' action
 			foreach(array(true, false) as $publicHistory_Config) {
-				Config::inst()->update('VersionFeed', 'changes_enabled', $publicHistory_Config);
+				Config::inst()->update(VersionFeed::class, 'changes_enabled', $publicHistory_Config);
 				$expectedResponse = $publicHistory_Page && $publicHistory_Config ? 200 : 404;
 				$response = $this->get($page->RelativeLink('changes'));
 				$this->assertEquals($expectedResponse, $response->getStatusCode());
@@ -204,7 +223,7 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 			// Test requests to 'allchanges' action on each page
 			foreach(array(true, false) as $allChanges_Config) {
 				foreach(array(true, false) as $allChanges_SiteConfig) {
-					Config::inst()->update('VersionFeed', 'allchanges_enabled', $allChanges_Config);
+					Config::inst()->update(VersionFeed::class, 'allchanges_enabled', $allChanges_Config);
 					$siteConfig = SiteConfig::current_site_config();
 					$siteConfig->AllChangesEnabled = $allChanges_SiteConfig;
 					$siteConfig->write();

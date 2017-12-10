@@ -1,6 +1,16 @@
 <?php
 
-namespace VersionFeed\Filters;
+namespace SilverStripe\VersionFeed\Filters;
+
+
+
+
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Control\Controller;
+use SilverStripe\Control\HTTPResponse_Exception;
+
+
+
 
 /**
  * Provides rate limiting of execution of a callback
@@ -60,13 +70,13 @@ class RateLimitFilter extends ContentFilter {
 		$key = self::CACHE_PREFIX;
 		
 		// Add global identifier
-		if(\Config::inst()->get(get_class(), 'lock_bypage'))  {
+		if(Config::inst()->get(get_class(), 'lock_bypage'))  {
 			$key .= '_' . md5($itemkey);
 		}
 		
 		// Add user-specific identifier
-		if(\Config::inst()->get(get_class(), 'lock_byuserip') && \Controller::has_curr()) {
-			$ip = \Controller::curr()->getRequest()->getIP();
+		if(Config::inst()->get(get_class(), 'lock_byuserip') && Controller::has_curr()) {
+			$ip = Controller::curr()->getRequest()->getIP();
 			$key .= '_' . md5($ip);
 		}
 		
@@ -76,7 +86,7 @@ class RateLimitFilter extends ContentFilter {
 
 	public function getContent($key, $callback) {
 		// Bypass rate limiting if flushing, or timeout isn't set
-		$timeout = \Config::inst()->get(get_class(), 'lock_timeout');
+		$timeout = Config::inst()->get(get_class(), 'lock_timeout');
 		if(isset($_GET['flush']) || !$timeout) {
 			return parent::getContent($key, $callback);
 		}
@@ -87,7 +97,7 @@ class RateLimitFilter extends ContentFilter {
 		if($lockedUntil = $cache->load($limitKey)) {
 			if(time() < $lockedUntil) {
 				// Politely inform visitor of limit
-				$response = new \SS_HTTPResponse_Exception('Too Many Requests.', 429);
+				$response = new HTTPResponse_Exception('Too Many Requests.', 429);
 				$response->getResponse()->addHeader('Retry-After', 1 + $lockedUntil - time());
 				throw $response;
 			}
@@ -100,7 +110,7 @@ class RateLimitFilter extends ContentFilter {
 		$result = parent::getContent($key, $callback);
 
 		// Reset rate limit with optional cooldown
-		if($cooldown = \Config::inst()->get(get_class(), 'lock_cooldown')) {
+		if($cooldown = Config::inst()->get(get_class(), 'lock_cooldown')) {
 			// Set cooldown on successful query execution
 			$cache->save(time() + $cooldown, $limitKey);
 		} else {

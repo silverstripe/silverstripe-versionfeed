@@ -1,0 +1,12 @@
+mappings:
+  VersionFeed: SilverStripe\VersionFeed\VersionFeed
+  VersionFeed_Controller: SilverStripe\VersionFeed\VersionFeedController
+  VersionFeedSiteConfig: SilverStripe\VersionFeed\VersionFeedSiteConfig
+  CachedContentFilter: SilverStripe\VersionFeed\Filters\CachedContentFilter
+  ContentFilter: SilverStripe\VersionFeed\Filters\ContentFilter
+  RateLimitFilter: SilverStripe\VersionFeed\Filters\RateLimitFilter
+  \VersionFeed\Filters\CachedContentFilter: SilverStripe\VersionFeed\Filters\CachedContentFilter
+  \VersionFeed\Filters\ContentFilter: SilverStripe\VersionFeed\Filters\ContentFilter
+  \VersionFeed\Filters\RateLimitFilter: SilverStripe\VersionFeed\Filters\RateLimitFilter
+  VersionFeedFunctionalTest: SilverStripe\VersionFeed\Tests\VersionFeedFunctionalTest
+  VersionFeedTest: SilverStripe\VersionFeed\Tests\VersionFeedTest

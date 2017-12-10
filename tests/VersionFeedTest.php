@@ -1,11 +1,21 @@
 <?php
+
+namespace SilverStripe\VersionFeed\Tests;
+
+
+use Page;
+use SilverStripe\VersionFeed\VersionFeed;
+use SilverStripe\VersionFeed\VersionFeedController;
+use SilverStripe\Dev\SapphireTest;
+
+
 class VersionFeedTest extends SapphireTest {
 
 	protected $usesDatabase = true;
 
 	protected $requiredExtensions = array(
-		'SiteTree' => array('VersionFeed'),
-		'ContentController' => array('VersionFeed_Controller'),
+		'SiteTree' => array(VersionFeed::class),
+		'ContentController' => array(VersionFeedController::class),
 	);
 
 	protected $illegalExtensions = array(

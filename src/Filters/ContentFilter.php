@@ -1,6 +1,14 @@
 <?php
 
-namespace VersionFeed\Filters;
+namespace SilverStripe\VersionFeed\Filters;
+
+use SS_Cache;
+
+use SilverStripe\VersionFeed\VersionFeedController;
+use SilverStripe\Core\Config\Config;
+
+
+
 
 /**
  * Conditionally executes a given callback, attempting to return the desired results
@@ -33,11 +41,11 @@ abstract class ContentFilter {
 	 * @return Zend_Cache_Frontend
 	 */
 	protected function getCache() {
-		$cache = \SS_Cache::factory('VersionFeed_Controller');
+		$cache = \SS_Cache::factory(VersionFeedController::class);
 		$cache->setOption('automatic_serialization', true);
 
 		// Map 0 to null for unlimited lifetime
-		$lifetime = \Config::inst()->get(get_class($this), 'cache_lifetime') ?: null;
+		$lifetime = Config::inst()->get(get_class($this), 'cache_lifetime') ?: null;
 		$cache->setLifetime($lifetime);
 		return $cache;
 	}
