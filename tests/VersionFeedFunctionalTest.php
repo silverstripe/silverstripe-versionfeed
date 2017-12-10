@@ -2,16 +2,14 @@
 
 namespace SilverStripe\VersionFeed\Tests;
 
-
-use SS_Cache;
-use Zend_Cache;
-
-
 use Page;
 
 use SilverStripe\VersionFeed\VersionFeed;
+use SilverStripe\VersionFeed\Filters\CachedContentFilter;
+use SilverStripe\VersionFeed\Filters\RateLimitFilter;
 use SilverStripe\VersionFeed\VersionFeedController;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\SiteConfig\SiteConfig;
@@ -21,7 +19,7 @@ use SilverStripe\Dev\FunctionalTest;
 class VersionFeedFunctionalTest extends FunctionalTest {
     protected $usesDatabase = true;
 
-	protected $requiredExtensions = array(
+	protected $required_extensions = array(
 		'Page' => array(VersionFeed::class),
 		'Page_Controller' => array(VersionFeedController::class),
 	);
@@ -31,8 +29,10 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 	public function setUp() {
 		parent::setUp();
 
-		$cache = SS_Cache::factory(VersionFeedController::class);
-		$cache->clean(Zend_Cache::CLEANING_MODE_ALL);
+		$cache = Injector::inst()->get(
+			CacheInterface::class . '.' . VersionFeedController::class
+		);
+		$cache->clear();
 
 		$this->userIP = isset($_SERVER['HTTP_CLIENT_IP']) ? $_SERVER['HTTP_CLIENT_IP'] : null;
 
@@ -42,11 +42,11 @@ class VersionFeedFunctionalTest extends FunctionalTest {
         Config::inst()->update(VersionFeed::class, 'allchanges_enabled', true);
 
 		// Disable caching and locking by default
-		Config::inst()->update('VersionFeed\Filters\CachedContentFilter', 'cache_enabled', false);
-		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_timeout', 0);
-		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_bypage', false);
-		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', false);
-		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_cooldown', false);
+		Config::inst()->update(CachedContentFilter::class, 'cache_enabled', false);
+		Config::inst()->update(RateLimitFilter::class, 'lock_timeout', 0);
+		Config::inst()->update(RateLimitFilter::class, 'lock_bypage', false);
+		Config::inst()->update(RateLimitFilter::class, 'lock_byuserip', false);
+		Config::inst()->update(RateLimitFilter::class, 'lock_cooldown', false);
 	}
 
 	public function tearDown() {
@@ -83,17 +83,18 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 
 	public function testRateLimiting() {
 		// Re-enable locking just for this test
-		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_timeout', 20);
-		Config::inst()->update('VersionFeed\Filters\CachedContentFilter', 'cache_enabled', true);
+		Config::inst()->update(RateLimitFilter::class, 'lock_timeout', 20);
+		Config::inst()->update(CachedContentFilter::class, 'cache_enabled', true);
 
 		$page1 = $this->createPageWithChanges(array('PublicHistory' => true, 'Title' => 'Page1'));
 		$page2 = $this->createPageWithChanges(array('PublicHistory' => true, 'Title' => 'Page2'));
 
 		// Artifically set cache lock
-		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', false);
-		$cache = SS_Cache::factory(VersionFeedController::class);
-		$cache->setOption('automatic_serialization', true);
-		$cache->save(time() + 10, \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX);
+		Config::inst()->update(RateLimitFilter::class, 'lock_byuserip', false);
+		$cache = Injector::inst()->get(
+			CacheInterface::class . '.' . VersionFeedController::class
+		);
+		$cache->set(time() + 10, \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX);
 
 		// Test normal hit
 		$response = $this->get($page1->RelativeLink('changes'));
@@ -104,39 +105,39 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		$this->assertGreaterThan(0, $response->getHeader('Retry-After'));
 
 		// Test page specific lock
-		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_bypage', true);
+		Config::inst()->update(RateLimitFilter::class, 'lock_bypage', true);
 		$key = implode('_', array(
 			'changes',
 			$page1->ID,
 			Versioned::get_versionnumber_by_stage(SiteTree::class, 'Live', $page1->ID, false)
 		));
 		$key = \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX . '_' . md5($key);
-		$cache->save(time() + 10, $key);
+		$cache->set(time() + 10, $key);
 		$response = $this->get($page1->RelativeLink('changes'));
 		$this->assertEquals(429, $response->getStatusCode());
 		$this->assertGreaterThan(0, $response->getHeader('Retry-After'));
 		$response = $this->get($page2->RelativeLink('changes'));
 		$this->assertEquals(200, $response->getStatusCode());
-		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_bypage', false);
+		Config::inst()->update(RateLimitFilter::class, 'lock_bypage', false);
 
 		// Test rate limit hit by IP
-		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', true);
+		Config::inst()->update(RateLimitFilter::class, 'lock_byuserip', true);
 		$_SERVER['HTTP_CLIENT_IP'] = '127.0.0.1';
-		$cache->save(time() + 10, \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX . '_' . md5('127.0.0.1'));
+		$cache->set(time() + 10, \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX . '_' . md5('127.0.0.1'));
 		$response = $this->get($page1->RelativeLink('changes'));
 		$this->assertEquals(429, $response->getStatusCode());
 		$this->assertGreaterThan(0, $response->getHeader('Retry-After'));
 
 		// Test rate limit doesn't hit other IP
 		$_SERVER['HTTP_CLIENT_IP'] = '127.0.0.20';
-		$cache->save(time() + 10, \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX . '_' . md5('127.0.0.1'));
+		$cache->set(time() + 10, \VersionFeed\Filters\RateLimitFilter::CACHE_PREFIX . '_' . md5('127.0.0.1'));
 		$response = $this->get($page1->RelativeLink('changes'));
 		$this->assertEquals(200, $response->getStatusCode());
 
 		// Restore setting
-		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', false);
-		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_timeout', 0);
-		Config::inst()->update('VersionFeed\Filters\CachedContentFilter', 'cache_enabled', false);
+		Config::inst()->update(RateLimitFilter::class, 'lock_byuserip', false);
+		Config::inst()->update(RateLimitFilter::class, 'lock_timeout', 0);
+		Config::inst()->update(CachedContentFilter::class, 'cache_enabled', false);
 	}
 
 	public function testContainsChangesForPageOnly() {

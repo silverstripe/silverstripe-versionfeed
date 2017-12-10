@@ -121,7 +121,7 @@ class VersionFeed extends SiteTreeExtension {
 					$changed = true;
 				}
 
-				// Copy the link so it can be cached by SS_Cache.
+				// Copy the link so it can be cached.
 				$version->GeneratedLink = $version->AbsoluteLink();
 			}
 
@@ -142,7 +142,7 @@ class VersionFeed extends SiteTreeExtension {
 			$first = clone($previous);
 			$first->DiffContent = new HTMLText();
 			$first->DiffContent->setValue('<div>' . $first->Content . '</div>');
-			// Copy the link so it can be cached by SS_Cache.
+			// Copy the link so it can be cached.
 			$first->GeneratedLink = $first->AbsoluteLink();
 			$changeList->push($first);
 		}

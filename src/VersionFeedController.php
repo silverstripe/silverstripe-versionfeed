@@ -2,17 +2,6 @@
 
 namespace SilverStripe\VersionFeed;
 
-
-
-
-
-
-
-
-
-
-
-
 use SilverStripe\Core\Config\Config;
 use SilverStripe\VersionFeed\VersionFeed;
 use SilverStripe\Control\RSS\RSSFeed;
@@ -25,8 +14,7 @@ use SilverStripe\Versioned\Versioned_Version;
 use SilverStripe\Core\Convert;
 use SilverStripe\View\Requirements;
 use SilverStripe\Core\Extension;
-
-
+use SilverStripe\VersionFeed\Filters\ContentFilter;
 
 class VersionFeed_Controller extends Extension {
 
@@ -38,16 +26,16 @@ class VersionFeed_Controller extends Extension {
 	/**
 	 * Content handler
 	 *
-	 * @var \VersionFeed\Filters\ContentFilter
+	 * @var ContentFilter
 	 */
 	protected $contentFilter;
 	
 	/**
 	 * Sets the content filter
 	 * 
-	 * @param \VersionFeed\Filters\ContentFilter $contentFilter
+	 * @param ContentFilter $contentFilter
 	 */
-	public function setContentFilter(\VersionFeed\Filters\ContentFilter $contentFilter) {
+	public function setContentFilter(ContentFilter $contentFilter) {
 		$this->contentFilter = $contentFilter;
 	}
 	

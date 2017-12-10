@@ -94,7 +94,7 @@ class RateLimitFilter extends ContentFilter {
 		// Generate result with rate limiting enabled
 		$limitKey = $this->getCacheKey($key);
 		$cache = $this->getCache();
-		if($lockedUntil = $cache->load($limitKey)) {
+		if($lockedUntil = $cache->get($limitKey)) {
 			if(time() < $lockedUntil) {
 				// Politely inform visitor of limit
 				$response = new HTTPResponse_Exception('Too Many Requests.', 429);
@@ -102,9 +102,11 @@ class RateLimitFilter extends ContentFilter {
 				throw $response;
 			}
 		}
+
+		$lifetime = Config::inst()->get(ContentFilter::class, 'cache_lifetime') ?: null;
 		
 		// Apply rate limit
-		$cache->save(time() + $timeout, $limitKey);
+		$cache->set(time() + $timeout, $limitKey, $lifetime);
 		
 		// Generate results
 		$result = parent::getContent($key, $callback);
@@ -112,7 +114,7 @@ class RateLimitFilter extends ContentFilter {
 		// Reset rate limit with optional cooldown
 		if($cooldown = Config::inst()->get(get_class(), 'lock_cooldown')) {
 			// Set cooldown on successful query execution
-			$cache->save(time() + $cooldown, $limitKey);
+			$cache->set(time() + $cooldown, $limitKey, $lifetime);
 		} else {
 			// Without cooldown simply disable lock
 			$cache->remove($limitKey);

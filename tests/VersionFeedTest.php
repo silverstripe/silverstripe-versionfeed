@@ -13,7 +13,7 @@ class VersionFeedTest extends SapphireTest {
 
 	protected $usesDatabase = true;
 
-	protected $requiredExtensions = array(
+	protected $required_extensions = array(
 		'SiteTree' => array(VersionFeed::class),
 		'ContentController' => array(VersionFeedController::class),
 	);
