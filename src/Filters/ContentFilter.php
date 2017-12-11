@@ -15,7 +15,7 @@ use SilverStripe\Core\Injector\Injector;
  */
 abstract class ContentFilter {
 
-	use configurable;
+	use Configurable;
 	
 	/**
 	 * Nested content filter
