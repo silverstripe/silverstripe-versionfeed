@@ -26,7 +26,7 @@ class VersionFeed extends SiteTreeExtension
 
     public function updateFieldLabels(&$labels)
     {
-        $labels['PublicHistory'] = _t('RSSHistory.LABEL', 'Make history public');
+        $labels['PublicHistory'] = _t(__CLASS__ . '.LABEL', 'Make history public');
     }
 
     /**
@@ -99,7 +99,7 @@ class VersionFeed extends SiteTreeExtension
                     $version->DiffTitle->setValue(
                         sprintf(
                             '<div><em>%s</em> ' . $diffTitle . '</div>',
-                            _t('RSSHistory.TITLECHANGED', 'Title has changed:')
+                            _t(__CLASS__ . '.TITLECHANGED', 'Title has changed:')
                         )
                     );
                     $changed = true;
@@ -189,7 +189,7 @@ class VersionFeed extends SiteTreeExtension
         ));
 
         $warning = _t(
-            'VersionFeed.Warning',
+            __CLASS__ . '.Warning',
             "Publicising the history will also disclose the changes that have at the time been protected " .
             "from the public view."
         );
@@ -198,7 +198,7 @@ class VersionFeed extends SiteTreeExtension
 
         if ($this->owner->CanViewType!='Anyone') {
             $warning = _t(
-                'VersionFeed.Warning2',
+                __CLASS__ . '.Warning2',
                 "Changing access settings in such a way that this page or pages under it become publicly<br>" .
                 "accessible may result in publicising all historical changes on these pages too. Please review<br>" .
                 "this section's \"Public history\" settings to ascertain only intended information is disclosed."

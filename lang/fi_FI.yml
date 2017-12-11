@@ -1,12 +1,11 @@
 fi_FI:
-  RSSHistory:
+  SilverStripe\VersionFeed\VersionFeed:
     LABEL: 'Tee historiasta julkinen'
     SINGLEPAGEFEEDTITLE: 'Päivityksiä %s sivuun'
     SITEFEEDTITLE: 'Päivityksiä: %s'
     TITLECHANGED: 'Otsikko on muuttunut:'
-  VersionFeed:
     Warning: 'Historian julkaisu paljastaa myös muutokset, jotka ovat suojattu julkiselta tarkastelulta.'
     Warning2: 'Muutettaessa tämä tai sen alasivut julkisiksi,<br>voi toimenpide aiheuttaa myös kaiken muutoshistorian muuttumisen julkiseksi kyseisillä sivuilla. Ole hyvä<br>ja tarkista "Julkinen historia"-asetuksista, että vain haluttu tieto on julkaistuna.'
-  VersionFeedSiteConfig:
+  SilverStripe\VersionFeed\VersionFeedSiteConfig:
     ALLCHANGES: 'Kaikki sivumuokkaukset'
     ALLCHANGESLABEL: 'Tee muutoksista julkisia'

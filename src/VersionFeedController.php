@@ -84,7 +84,7 @@ class VersionFeedController extends Extension
         });
 
         // Generate the output.
-        $title = sprintf(_t('RSSHistory.SINGLEPAGEFEEDTITLE', 'Updates to %s page'), $this->owner->Title);
+        $title = sprintf(_t(VersionFeed::class . '.SINGLEPAGEFEEDTITLE', 'Updates to %s page'), $this->owner->Title);
         $rss = new RSSFeed($entries, $this->owner->request->getURL(), $title, '', 'Title', '', null);
         $rss->setTemplate('Page_changes_rss');
         return $rss->outputToBrowser();
@@ -165,7 +165,7 @@ class VersionFeedController extends Extension
         RSSFeed::linkToFeed(
             $this->owner->Link('changes'),
             sprintf(
-                _t('RSSHistory.SINGLEPAGEFEEDTITLE', 'Updates to %s page'),
+                _t(VersionFeed::class . '.SINGLEPAGEFEEDTITLE', 'Updates to %s page'),
                 $this->owner->Title
             )
         );
@@ -194,6 +194,6 @@ class VersionFeedController extends Extension
 
     public function linkToAllSitesRSSFeedTitle()
     {
-        return sprintf(_t('RSSHistory.SITEFEEDTITLE', 'Updates to %s'), SiteConfig::current_site_config()->Title);
+        return sprintf(_t(VersionFeed::class . '.SITEFEEDTITLE', 'Updates to %s'), SiteConfig::current_site_config()->Title);
     }
 }

@@ -1,12 +1,11 @@
 eo:
-  RSSHistory:
+  SilverStripe\VersionFeed\VersionFeed:
     LABEL: 'Publikigu historion'
     SINGLEPAGEFEEDTITLE: 'Ĝisdatigoj al paĝo %s'
     SITEFEEDTITLE: 'Ĝisdatigoj al %s'
     TITLECHANGED: 'Titolo estas ŝanĝita:'
-  VersionFeed:
     Warning: 'Publikigi la historion ankaŭ malkaŝos la ŝanĝojn ĝis tiam protektitajn kontraŭ publika vido.'
     Warning2: 'Ŝanĝi la alirajn agordojn tiel ke ĉi tiu paĝo, aŭ paĝoj sub ĝi, fariĝas publike alireblaj <br>eble rezultigos ke publikiĝos ĉiuj historiaj ŝanĝoj en tiuj paĝoj. Bonvole rekonsideru <br> la sekcion "Publika historio" de ĉi tiu sekcio, por certigi ke nur intencita informo publikiĝu.'
-  VersionFeedSiteConfig:
+  SilverStripe\VersionFeed\VersionFeedSiteConfig:
     ALLCHANGES: 'Ĉiuj paĝaj ŝanĝoj'
     ALLCHANGESLABEL: 'Ĉieaj ŝanĝoj fluu en publikan'

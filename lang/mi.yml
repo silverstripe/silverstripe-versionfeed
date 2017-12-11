@@ -1,9 +1,8 @@
 mi:
-  RSSHistory:
+  SilverStripe\VersionFeed\VersionFeed:
     LABEL: 'Meinga kia tūmatanui te hītori'
     SINGLEPAGEFEEDTITLE: 'Ngā whakahou ki te whārangi %s'
     SITEFEEDTITLE: 'Ngā whakahou ki te %s'
     TITLECHANGED: 'Kua hurihia te taitara:'
-  VersionFeed:
     Warning: 'Mā te whakarite kia tūmatanui te hītori ka whakaaturia hoki ngā huringa o mua tērā i hunaia i te tirohanga tūmatanui.'
     Warning2: 'Mā te huri i ngā tautuhinga uru kia noho wātea <br>tūmatanui ai tēnei whārangi, ngā whārangi rānei i raro i taua whārangi, tērā pea ko te mutunga iho ko te wātea tūmatanui o ngā huringa hītori katoa i aua whārangi. Me arotake<br>ngā tautuhinga "Hītori tūmatanui" o tēnei wāhanga kia mōhio ai ka whakaaturia anake ngā mōhiohio ka hiahiatia.'

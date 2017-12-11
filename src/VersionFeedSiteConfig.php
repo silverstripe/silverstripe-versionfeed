@@ -25,7 +25,7 @@ class VersionFeedSiteConfig extends DataExtension
 
     public function updateFieldLabels(&$labels)
     {
-        $labels['AllChangesEnabled'] = _t('VersionFeedSiteConfig.ALLCHANGESLABEL', 'Make global changes feed public');
+        $labels['AllChangesEnabled'] = _t(VersionFeedSiteConfig::class . '.ALLCHANGESLABEL', 'Make global changes feed public');
     }
     
     public function updateCMSFields(FieldList $fields)
@@ -37,9 +37,9 @@ class VersionFeedSiteConfig extends DataExtension
         $fields->addFieldToTab(
             'Root.Access',
             FieldGroup::create(new CheckboxField('AllChangesEnabled', $this->owner->fieldLabel('AllChangesEnabled')))
-                ->setTitle(_t('VersionFeedSiteConfig.ALLCHANGES', 'All page changes'))
+                ->setTitle(_t(VersionFeedSiteConfig::class . '.ALLCHANGES', 'All page changes'))
                 ->setDescription(_t(
-                    'VersionFeed.Warning',
+                    VersionFeed::class . '.Warning',
                     "Publicising the history will also disclose the changes that have at the time been protected " .
                     "from the public view."
                 ))
