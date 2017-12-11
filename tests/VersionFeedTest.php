@@ -1,16 +1,28 @@
 <?php
+
+namespace SilverStripe\VersionFeed\Tests;
+
+
+use Page;
+use SilverStripe\VersionFeed\VersionFeed;
+use SilverStripe\VersionFeed\VersionFeedController;
+use SilverStripe\Dev\SapphireTest;
+use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\CMS\Controllers\ContentController;
+
+
 class VersionFeedTest extends SapphireTest {
 
 	protected $usesDatabase = true;
 
-	protected $requiredExtensions = array(
-		'SiteTree' => array('VersionFeed'),
-		'ContentController' => array('VersionFeed_Controller'),
-	);
+	protected static $required_extensions = [
+		SiteTree::class => [VersionFeed::class],
+		ContentController::class => [VersionFeedController::class],
+	];
 
-	protected $illegalExtensions = array(
-		'SiteTree' => array('Translatable')
-	);
+	protected $illegalExtensions = [
+		'SiteTree' => ['Translatable']
+	];
 
 	public function testDiffedChangesExcludesRestrictedItems() {
 		$this->markTestIncomplete();
@@ -21,7 +33,7 @@ class VersionFeedTest extends SapphireTest {
 	}
 
 	public function testDiffedChangesTitle() {
-		$page = new Page(array('Title' => 'My Title'));
+		$page = new Page(['Title' => 'My Title']);
 		$page->write();
 		$page->publish('Stage', 'Live');
 	

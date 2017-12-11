@@ -1,5 +1,18 @@
 <?php
 
+namespace SilverStripe\VersionFeed;
+
+use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\View\Parsers\Diff;
+use SilverStripe\ORM\ArrayList;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Forms\CheckboxField;
+use SilverStripe\Forms\FieldGroup;
+use SilverStripe\Forms\LiteralField;
+use SilverStripe\SiteConfig\SiteConfig;
+use SilverStripe\CMS\Model\SiteTreeExtension;
+
 class VersionFeed extends SiteTreeExtension {
 	
 	private static $db = array(
@@ -80,7 +93,7 @@ class VersionFeed extends SiteTreeExtension {
 				if ($version->Title != $previous->Title) {
 					$diffTitle = Diff::compareHTML($version->Title, $previous->Title);
 
-					$version->DiffTitle = new HTMLText();
+					$version->DiffTitle = DBField::create_field('HTMLText', null);
 					$version->DiffTitle->setValue(
 						sprintf(
 							'<div><em>%s</em> ' . $diffTitle . '</div>',
@@ -93,12 +106,12 @@ class VersionFeed extends SiteTreeExtension {
 				if ($version->Content != $previous->Content) {
 					$diffContent = Diff::compareHTML($version->Content, $previous->Content);
 
-					$version->DiffContent = new HTMLText();
+					$version->DiffContent = DBField::create_field('HTMLText', null);
 					$version->DiffContent->setValue('<div>'.$diffContent.'</div>');
 					$changed = true;
 				}
 
-				// Copy the link so it can be cached by SS_Cache.
+				// Copy the link so it can be cached.
 				$version->GeneratedLink = $version->AbsoluteLink();
 			}
 
@@ -117,9 +130,9 @@ class VersionFeed extends SiteTreeExtension {
 		// a diff on the initial version we will just get that version, verbatim.
 		if ($previous && $versions->count()<$qLimit) {
 			$first = clone($previous);
-			$first->DiffContent = new HTMLText();
+			$first->DiffContent = DBField::create_field('HTMLText', null);
 			$first->DiffContent->setValue('<div>' . $first->Content . '</div>');
-			// Copy the link so it can be cached by SS_Cache.
+			// Copy the link so it can be cached.
 			$first->GeneratedLink = $first->AbsoluteLink();
 			$changeList->push($first);
 		}

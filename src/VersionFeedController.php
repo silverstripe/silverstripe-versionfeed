@@ -1,6 +1,22 @@
 <?php
 
-class VersionFeed_Controller extends Extension {
+namespace SilverStripe\VersionFeed;
+
+use SilverStripe\Core\Config\Config;
+use SilverStripe\VersionFeed\VersionFeed;
+use SilverStripe\Control\RSS\RSSFeed;
+use SilverStripe\SiteConfig\SiteConfig;
+use SilverStripe\ORM\DB;
+use SilverStripe\Security\Member;
+use SilverStripe\ORM\ArrayList;
+use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Versioned\Versioned_Version;
+use SilverStripe\Core\Convert;
+use SilverStripe\View\Requirements;
+use SilverStripe\Core\Extension;
+use SilverStripe\VersionFeed\Filters\ContentFilter;
+
+class VersionFeedController extends Extension {
 
 	private static $allowed_actions = array(
 		'changes',
@@ -10,16 +26,16 @@ class VersionFeed_Controller extends Extension {
 	/**
 	 * Content handler
 	 *
-	 * @var \VersionFeed\Filters\ContentFilter
+	 * @var ContentFilter
 	 */
 	protected $contentFilter;
 	
 	/**
 	 * Sets the content filter
 	 * 
-	 * @param \VersionFeed\Filters\ContentFilter $contentFilter
+	 * @param ContentFilter $contentFilter
 	 */
-	public function setContentFilter(\VersionFeed\Filters\ContentFilter $contentFilter) {
+	public function setContentFilter(ContentFilter $contentFilter) {
 		$this->contentFilter = $contentFilter;
 	}
 	
@@ -48,7 +64,7 @@ class VersionFeed_Controller extends Extension {
 	 */
 	public function changes() {
 		// Check viewability of changes
-		if(!Config::inst()->get('VersionFeed', 'changes_enabled')
+		if(!Config::inst()->get(VersionFeed::class, 'changes_enabled')
 			|| !$this->owner->PublicHistory
 			|| $this->owner->Version == ''
 		) {
@@ -59,7 +75,7 @@ class VersionFeed_Controller extends Extension {
 		$target = $this->owner;
 		$key = implode('_', array('changes', $this->owner->ID, $this->owner->Version));
 		$entries = $this->filterContent($key, function() use ($target) {
-			return $target->getDiffList(null, Config::inst()->get('VersionFeed', 'changes_limit'));
+			return $target->getDiffList(null, Config::inst()->get(VersionFeed::class, 'changes_limit'));
 		});
 
 		// Generate the output.
@@ -74,13 +90,13 @@ class VersionFeed_Controller extends Extension {
 	 */
 	public function allchanges() {
 		// Check viewability of allchanges
-		if(!Config::inst()->get('VersionFeed', 'allchanges_enabled')
+		if(!Config::inst()->get(VersionFeed::class, 'allchanges_enabled')
 			|| !SiteConfig::current_site_config()->AllChangesEnabled
 		) {
 			return $this->owner->httpError(404, 'Global history not viewable');
 		}
 
-		$limit = (int)Config::inst()->get('VersionFeed', 'allchanges_limit');
+		$limit = (int)Config::inst()->get(VersionFeed::class, 'allchanges_limit');
 		$latestChanges = DB::query('
 			SELECT * FROM "SiteTree_versions"
 			WHERE "WasPublished" = \'1\'
@@ -135,7 +151,7 @@ class VersionFeed_Controller extends Extension {
 	 * Generates and embeds the RSS header link for the page-specific version rss feed
 	 */
 	public function linkToPageRSSFeed() {
-		if (!Config::inst()->get('VersionFeed', 'changes_enabled') || !$this->owner->PublicHistory) {
+		if (!Config::inst()->get(VersionFeed::class, 'changes_enabled') || !$this->owner->PublicHistory) {
 			return;
 		}
 		
@@ -152,7 +168,7 @@ class VersionFeed_Controller extends Extension {
 	 * Generates and embeds the RSS header link for the global version rss feed
 	 */
 	public function linkToAllSiteRSSFeed() {
-		if(!Config::inst()->get('VersionFeed', 'allchanges_enabled')
+		if(!Config::inst()->get(VersionFeed::class, 'allchanges_enabled')
 			|| !SiteConfig::current_site_config()->AllChangesEnabled
 		) {
 			return;
