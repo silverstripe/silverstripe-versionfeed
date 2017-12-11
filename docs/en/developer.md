@@ -42,7 +42,7 @@ Two filters are applied on top of one another:
    server. This filter will only be applied if the `CachedContentFilter` does not have any cached record
   for a request.
 
-Either one of these can be replaced, added to, or removed, by adjusting the `VersionFeed_Controller.dependencies`
+Either one of these can be replaced, added to, or removed, by adjusting the `SilverStripe\VersionFeed\VersionFeedController.dependencies`
 config to point to a replacement (or no) filter.
 
 For smaller servers where it's reasonable to apply a strict approach to rate limiting the default

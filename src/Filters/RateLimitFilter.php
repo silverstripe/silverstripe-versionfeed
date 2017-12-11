@@ -70,12 +70,12 @@ class RateLimitFilter extends ContentFilter {
 		$key = self::CACHE_PREFIX;
 		
 		// Add global identifier
-		if(Config::inst()->get(get_class(), 'lock_bypage'))  {
+		if($this->config()->get('lock_bypage'))  {
 			$key .= '_' . md5($itemkey);
 		}
 		
 		// Add user-specific identifier
-		if(Config::inst()->get(get_class(), 'lock_byuserip') && Controller::has_curr()) {
+		if($this->config()->get('lock_byuserip') && Controller::has_curr()) {
 			$ip = Controller::curr()->getRequest()->getIP();
 			$key .= '_' . md5($ip);
 		}
@@ -86,7 +86,7 @@ class RateLimitFilter extends ContentFilter {
 
 	public function getContent($key, $callback) {
 		// Bypass rate limiting if flushing, or timeout isn't set
-		$timeout = Config::inst()->get(get_class(), 'lock_timeout');
+		$timeout = $this->config()->get('lock_timeout');
 		if(isset($_GET['flush']) || !$timeout) {
 			return parent::getContent($key, $callback);
 		}
@@ -106,18 +106,18 @@ class RateLimitFilter extends ContentFilter {
 		$lifetime = Config::inst()->get(ContentFilter::class, 'cache_lifetime') ?: null;
 		
 		// Apply rate limit
-		$cache->set(time() + $timeout, $limitKey, $lifetime);
+		$cache->set($limitKey, time() + $timeout, $lifetime);
 		
 		// Generate results
 		$result = parent::getContent($key, $callback);
 
 		// Reset rate limit with optional cooldown
-		if($cooldown = Config::inst()->get(get_class(), 'lock_cooldown')) {
+		if($cooldown = $this->config()->get('lock_cooldown')) {
 			// Set cooldown on successful query execution
-			$cache->set(time() + $cooldown, $limitKey, $lifetime);
+			$cache->set($limitKey, time() + $cooldown, $lifetime);
 		} else {
 			// Without cooldown simply disable lock
-			$cache->remove($limitKey);
+			$cache->delete($limitKey);
 		}
 		return $result;
 	}

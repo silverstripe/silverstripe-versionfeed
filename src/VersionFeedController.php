@@ -16,7 +16,7 @@ use SilverStripe\View\Requirements;
 use SilverStripe\Core\Extension;
 use SilverStripe\VersionFeed\Filters\ContentFilter;
 
-class VersionFeed_Controller extends Extension {
+class VersionFeedController extends Extension {
 
 	private static $allowed_actions = array(
 		'changes',

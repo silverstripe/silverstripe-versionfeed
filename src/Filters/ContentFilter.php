@@ -2,10 +2,8 @@
 
 namespace SilverStripe\VersionFeed\Filters;
 
-use SS_Cache;
-
 use SilverStripe\VersionFeed\VersionFeedController;
-use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Config\Configurable;
 use Psr\SimpleCache\CacheInterface;
 use SilverStripe\Core\Injector\Injector;
 
@@ -16,6 +14,8 @@ use SilverStripe\Core\Injector\Injector;
  * of its execution.
  */
 abstract class ContentFilter {
+
+	use configurable;
 	
 	/**
 	 * Nested content filter
@@ -43,7 +43,7 @@ abstract class ContentFilter {
 	 */
 	protected function getCache() {
 		return Injector::inst()->get(
-			CacheInterface::class . '.' . VersionFeedController::class
+			CacheInterface::class . '.VersionFeedController'
 		);
 	}
 	

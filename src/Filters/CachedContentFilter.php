@@ -34,7 +34,7 @@ class CachedContentFilter extends ContentFilter {
 		// Fallback to generate result
 		$result = parent::getContent($key, $callback);
 		$lifetime = Config::inst()->get(ContentFilter::class, 'cache_lifetime') ?: null;
-		$cache->set($result, $key, $lifetime);
+		$cache->set($key, $result, $lifetime);
 		return $result;
 	}
 }
