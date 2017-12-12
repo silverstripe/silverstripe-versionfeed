@@ -22,7 +22,6 @@ before_script:
 
   # Install composer dependencies
   - composer validate
-  - composer require --no-update silverstripe/recipe-core:1.0.x-dev
   - if [[ $DB == PGSQL ]]; then composer require --no-update silverstripe/postgresql 2.0.x-dev; fi
   - composer install --prefer-dist --no-interaction --no-progress --no-suggest --optimize-autoloader --verbose --profile
 
