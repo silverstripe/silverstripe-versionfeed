@@ -3,19 +3,18 @@
 namespace SilverStripe\VersionFeed\Tests;
 
 use Page;
-
-use SilverStripe\VersionFeed\VersionFeed;
-use SilverStripe\VersionFeed\Filters\CachedContentFilter;
-use SilverStripe\VersionFeed\Filters\RateLimitFilter;
-use SilverStripe\VersionFeed\VersionFeedController;
+use Psr\SimpleCache\CacheInterface;
+use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Versioned\Versioned;
-use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\Dev\FunctionalTest;
-use SilverStripe\Control\Director;
-use Psr\SimpleCache\CacheInterface;
+use SilverStripe\SiteConfig\SiteConfig;
+use SilverStripe\Versioned\Versioned;
+use SilverStripe\VersionFeed\Filters\CachedContentFilter;
+use SilverStripe\VersionFeed\Filters\RateLimitFilter;
+use SilverStripe\VersionFeed\VersionFeed;
+use SilverStripe\VersionFeed\VersionFeedController;
 
 class VersionFeedFunctionalTest extends FunctionalTest
 {
@@ -181,7 +180,7 @@ class VersionFeedFunctionalTest extends FunctionalTest
         $response = $this->get($page1->RelativeLink('allchanges'));
         $xml = simplexml_load_string($response->getBody());
         $titles = array_map(function ($item) {
-            return (string)$item->title;
+            return str_replace('Changed: ', '', (string) $item->title);
         }, $xml->xpath('//item'));
         $this->assertContains('Page1', $titles);
         $this->assertContains('Page2', $titles);
@@ -197,21 +196,21 @@ class VersionFeedFunctionalTest extends FunctionalTest
         ), $seed);
         $page->update($seed);
         $page->write();
-        $page->publish('Stage', 'Live');
+        $page->copyVersionToStage(Versioned::DRAFT, Versioned::LIVE);
 
         $page->update(array(
             'Title' => 'Changed: ' . $seed['Title'],
             'Content' => 'Changed: ' . $seed['Content'],
         ));
         $page->write();
-        $page->publish('Stage', 'Live');
+        $page->copyVersionToStage(Versioned::DRAFT, Versioned::LIVE);
 
         $page->update(array(
             'Title' => 'Changed again: ' . $seed['Title'],
             'Content' => 'Changed again: ' . $seed['Content'],
         ));
         $page->write();
-        $page->publish('Stage', 'Live');
+        $page->copyVersionToStage(Versioned::DRAFT, Versioned::LIVE);
 
         $page->update(array(
             'Title' => 'Unpublished: ' . $seed['Title'],
@@ -223,7 +222,7 @@ class VersionFeedFunctionalTest extends FunctionalTest
     }
 
     /**
-     * Tests response code for globally disabled feedss
+     * Tests response code for globally disabled feeds
      */
     public function testFeedViewability()
     {

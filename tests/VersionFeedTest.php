@@ -3,24 +3,20 @@
 namespace SilverStripe\VersionFeed\Tests;
 
 use Page;
+use SilverStripe\CMS\Controllers\ContentController;
+use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Versioned\Versioned;
 use SilverStripe\VersionFeed\VersionFeed;
 use SilverStripe\VersionFeed\VersionFeedController;
-use SilverStripe\Dev\SapphireTest;
-use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\CMS\Controllers\ContentController;
 
 class VersionFeedTest extends SapphireTest
 {
-
     protected $usesDatabase = true;
 
     protected static $required_extensions = [
         SiteTree::class => [VersionFeed::class],
         ContentController::class => [VersionFeedController::class],
-    ];
-
-    protected $illegalExtensions = [
-        'SiteTree' => ['Translatable']
     ];
 
     public function testDiffedChangesExcludesRestrictedItems()
@@ -37,11 +33,11 @@ class VersionFeedTest extends SapphireTest
     {
         $page = new Page(['Title' => 'My Title']);
         $page->write();
-        $page->publish('Stage', 'Live');
+        $page->copyVersionToStage(Versioned::STAGE, Versioned::LIVE);
     
         $page->Title = 'My Changed Title';
         $page->write();
-        $page->publish('Stage', 'Live');
+        $page->copyVersionToStage(Versioned::STAGE, Versioned::LIVE);
 
         $page->Title = 'My Unpublished Changed Title';
         $page->write();
