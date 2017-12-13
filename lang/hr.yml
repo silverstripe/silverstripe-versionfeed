@@ -1,8 +1,8 @@
 hr:
   SilverStripe\VersionFeed\VersionFeed:
     LABEL: 'Učini povijest dostupnu svima'
-    SINGLEPAGEFEEDTITLE: 'Ažuriranja za %s stranicu'
-    SITEFEEDTITLE: 'Ažuriranja za %s'
+    SINGLEPAGEFEEDTITLE: 'Ažuriranja za {title} stranicu'
+    SITEFEEDTITLE: 'Ažuriranja za {title}'
     TITLECHANGED: 'Naziv se promijenio:'
     Warning: 'Objavom povijesti će se također otkriti promjene koje su u to vrijeme bili zaštićeni od očiju javnosti.'
     Warning2: 'Promjenom postavki pristupi na takav način će učiniti da ova stranica ili stranice ispod nje postanu javno<br>dostupne mogu rezultirati objavomm svih povijesnih promjena na tim stranicama također. Molimo pregledajte<br>podatke sekcije "Public history" da budete sigurni samo željene informacije da su prikazane.'
