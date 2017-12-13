@@ -3,14 +3,12 @@
 namespace SilverStripe\VersionFeed;
 
 use SilverStripe\Core\Config\Config;
-use SilverStripe\VersionFeed\VersionFeed;
 use SilverStripe\Control\RSS\RSSFeed;
 use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\ORM\DB;
 use SilverStripe\Security\Member;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Versioned\Versioned_Version;
 use SilverStripe\Core\Convert;
 use SilverStripe\View\Requirements;
 use SilverStripe\Core\Extension;
@@ -18,7 +16,6 @@ use SilverStripe\VersionFeed\Filters\ContentFilter;
 
 class VersionFeedController extends Extension
 {
-
     private static $allowed_actions = array(
         'changes',
         'allchanges'
@@ -84,7 +81,11 @@ class VersionFeedController extends Extension
         });
 
         // Generate the output.
-        $title = sprintf(_t('RSSHistory.SINGLEPAGEFEEDTITLE', 'Updates to %s page'), $this->owner->Title);
+        $title = _t(
+            'SilverStripe\\VersionFeed\\VersionFeed.SINGLEPAGEFEEDTITLE',
+            'Updates to {title} page',
+            ['title' => $this->owner->Title]
+        );
         $rss = new RSSFeed($entries, $this->owner->request->getURL(), $title, '', 'Title', '', null);
         $rss->setTemplate('Page_changes_rss');
         return $rss->outputToBrowser();
@@ -148,7 +149,15 @@ class VersionFeedController extends Extension
 
         // Produce output
         $url = $this->owner->getRequest()->getURL();
-        $rss = new RSSFeed($changeList, $url, $this->linkToAllSitesRSSFeedTitle(), '', 'Title', '', null);
+        $rss = new RSSFeed(
+            $changeList,
+            $url,
+            $this->linkToAllSitesRSSFeedTitle(),
+            '',
+            'Title',
+            '',
+            null
+        );
         $rss->setTemplate('Page_allchanges_rss');
         return $rss->outputToBrowser();
     }
@@ -164,9 +173,10 @@ class VersionFeedController extends Extension
         
         RSSFeed::linkToFeed(
             $this->owner->Link('changes'),
-            sprintf(
-                _t('RSSHistory.SINGLEPAGEFEEDTITLE', 'Updates to %s page'),
-                $this->owner->Title
+            _t(
+                'SilverStripe\\VersionFeed\\VersionFeed.SINGLEPAGEFEEDTITLE',
+                'Updates to {title} page',
+                ['title' => $this->owner->Title]
             )
         );
     }
@@ -194,6 +204,10 @@ class VersionFeedController extends Extension
 
     public function linkToAllSitesRSSFeedTitle()
     {
-        return sprintf(_t('RSSHistory.SITEFEEDTITLE', 'Updates to %s'), SiteConfig::current_site_config()->Title);
+        return _t(
+            'SilverStripe\\VersionFeed\\VersionFeed.SITEFEEDTITLE',
+            'Updates to {title}',
+            ['title' => SiteConfig::current_site_config()->Title]
+        );
     }
 }

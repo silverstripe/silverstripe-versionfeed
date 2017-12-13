@@ -1,6 +1,8 @@
 # Version Feed
 
-[![Build Status](https://secure.travis-ci.org/silverstripe/silverstripe-versionfeed.png)](http://travis-ci.org/silverstripe/silverstripe-versionfeed)
+[![Build Status](http://img.shields.io/travis/silverstripe/silverstripe-versionfeed.svg?style=flat)](https://travis-ci.org/silverstripe/silverstripe-versionfeed)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/silverstripe/silverstripe-versionfeed/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/silverstripe/silverstripe-versionfeed/?branch=master)
+[![codecov](https://codecov.io/gh/silverstripe/silverstripe-versionfeed/branch/master/graph/badge.svg)](https://codecov.io/gh/silverstripe/silverstripe-versionfeed)
 
 ## Overview
 
@@ -8,23 +10,17 @@ The module creates an RSS feed on each page with their change history, as well a
 
 ## Requirements
 
- * SilverStripe 3.0+
+ * SilverStripe ^4
+
+**Note:** For a SilverStripe 3.x compatible version, please use [the 1.x release line](https://github.com/silverstripe/silverstripe-versionfeed/tree/1.2).
 
 ## Installation
 
-Install with composer by running:
-
-	composer require silverstripe/versionfeed:*
-
-in the root of your SilverStripe project.
-
-Or just clone/download the git repository into a subfolder (usually called "versionfeed") of your SilverStripe project.
+Install with composer by running `composer require silverstripe/versionfeed` in the root of your SilverStripe project.
 
 ## Usage
 
 For usage instructions see [user manual](docs/en/userguide/index.md).
-
-## Contributing
 
 ### Translations
 
