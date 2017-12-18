@@ -2,7 +2,12 @@
     "name": "silverstripe/versionfeed",
     "description": "Adds RSS feeds of content changes to SilverStripe",
     "type": "silverstripe-vendormodule",
-    "keywords": ["silverstripe", "rss", "feed", "cwp"],
+    "keywords": [
+        "silverstripe",
+        "rss",
+        "feed",
+        "cwp"
+    ],
     "license": "BSD-3-Clause",
     "authors": [
         {
@@ -10,8 +15,7 @@
             "email": "robert@silverstripe.com"
         }
     ],
-    "require":
-    {
+    "require": {
         "silverstripe/cms": "^4",
         "silverstripe/versioned": "^1",
         "silverstripe/siteconfig": "^4"
@@ -26,10 +30,8 @@
             "SilverStripe\\VersionFeed\\Tests\\": "tests/"
         }
     },
-    "extra": 
-    {
-        "branch-alias": 
-        {
+    "extra": {
+        "branch-alias": {
             "dev-master": "2.x-dev"
         }
     },
