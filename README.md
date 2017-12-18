@@ -22,7 +22,7 @@ Install with composer by running `composer require silverstripe/versionfeed` in 
 
 For usage instructions see [user manual](docs/en/userguide/index.md).
 
-### Translations
+## Translations
 
 Translations of the natural language strings are managed through a third party translation interface, transifex.com. Newly added strings will be periodically uploaded there for translation, and any new translations will be merged back to the project source code.
 

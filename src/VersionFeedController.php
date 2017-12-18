@@ -4,6 +4,8 @@ namespace SilverStripe\VersionFeed;
 
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Control\RSS\RSSFeed;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\Security\Security;
 use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\ORM\DB;
 use SilverStripe\Security\Member;
@@ -118,7 +120,7 @@ class VersionFeedController extends Extension
             // Cache the diffs to remove DOS possibility.
             $key = 'allchanges'
                 . preg_replace('#[^a-zA-Z0-9_]#', '', $lastChange['LastEdited'])
-                . (Member::currentUserID() ?: 'public');
+                . (Security::getCurrentUser() ? Security::getCurrentUser()->ID : 'public');
             $changeList = $this->filterContent($key, function () use ($latestChanges) {
                 $changeList = new ArrayList();
                 $canView = array();
@@ -127,14 +129,15 @@ class VersionFeedController extends Extension
                     // WARNING: although we are providing historical details, we check the current configuration.
                     $id = $record['RecordID'];
                     if (!isset($canView[$id])) {
-                        $page = SiteTree::get()->byID($id);
-                        $canView[$id] = $page && $page->canView(new Member());
+                        $page = DataObject::get_by_id(SiteTree::class, $id);
+                        $canView[$id] = $page && $page->canView(Security::getCurrentUser());
                     }
                     if (!$canView[$id]) {
                         continue;
                     }
 
                     // Get the diff to the previous version.
+                    $record['ID'] = $record['RecordID'];
                     $version = SiteTree::create($record);
                     if ($diff = $version->getDiff()) {
                         $changeList->push($diff);

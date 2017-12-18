@@ -3,19 +3,18 @@
 namespace SilverStripe\VersionFeed\Tests;
 
 use Page;
-
-use SilverStripe\VersionFeed\VersionFeed;
-use SilverStripe\VersionFeed\Filters\CachedContentFilter;
-use SilverStripe\VersionFeed\Filters\RateLimitFilter;
-use SilverStripe\VersionFeed\VersionFeedController;
+use Psr\SimpleCache\CacheInterface;
+use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Versioned\Versioned;
-use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\Dev\FunctionalTest;
-use SilverStripe\Control\Director;
-use Psr\SimpleCache\CacheInterface;
+use SilverStripe\SiteConfig\SiteConfig;
+use SilverStripe\Versioned\Versioned;
+use SilverStripe\VersionFeed\Filters\CachedContentFilter;
+use SilverStripe\VersionFeed\Filters\RateLimitFilter;
+use SilverStripe\VersionFeed\VersionFeed;
+use SilverStripe\VersionFeed\VersionFeedController;
 
 class VersionFeedFunctionalTest extends FunctionalTest
 {
@@ -55,7 +54,7 @@ class VersionFeedFunctionalTest extends FunctionalTest
         Config::modify()->set(RateLimitFilter::class, 'lock_cooldown', false);
     }
 
-    public function tearDown()
+    protected function tearDown()
     {
         Director::config()->set('alternate_base_url', null);
         
@@ -69,24 +68,37 @@ class VersionFeedFunctionalTest extends FunctionalTest
         $page = $this->createPageWithChanges(array('PublicHistory' => false));
 
         $response = $this->get($page->RelativeLink('changes'));
-        $this->assertEquals(404, $response->getStatusCode());
+        $this->assertEquals(
+            404,
+            $response->getStatusCode(),
+            'With Page\'s "PublicHistory" disabled, `changes` action response code should be 404'
+        );
 
         $response = $this->get($page->RelativeLink('allchanges'));
         $this->assertEquals(200, $response->getStatusCode());
         $xml = simplexml_load_string($response->getBody());
-        $this->assertFalse((bool)$xml->channel->item);
+        $this->assertFalse(
+            (bool)$xml->channel->item,
+            'With Page\'s "PublicHistory" disabled, `allchanges` action should not have an item in the channel'
+        );
 
         $page = $this->createPageWithChanges(array('PublicHistory' => true));
 
         $response = $this->get($page->RelativeLink('changes'));
         $this->assertEquals(200, $response->getStatusCode());
         $xml = simplexml_load_string($response->getBody());
-        $this->assertTrue((bool)$xml->channel->item);
+        $this->assertTrue(
+            (bool)$xml->channel->item,
+            'With Page\'s "PublicHistory" enabled, `changes` action should have an item in the channel'
+        );
 
         $response = $this->get($page->RelativeLink('allchanges'));
         $this->assertEquals(200, $response->getStatusCode());
         $xml = simplexml_load_string($response->getBody());
-        $this->assertTrue((bool)$xml->channel->item);
+        $this->assertTrue(
+            (bool)$xml->channel->item,
+            'With "PublicHistory" enabled, `allchanges` action should have an item in the channel'
+        );
     }
 
     public function testRateLimiting()
@@ -149,7 +161,7 @@ class VersionFeedFunctionalTest extends FunctionalTest
         Config::modify()->set(CachedContentFilter::class, 'cache_enabled', false);
     }
 
-    public function testContainsChangesForPageOnly()
+    public function testChangesActionContainsChangesForCurrentPageOnly()
     {
         $page1 = $this->createPageWithChanges(array('Title' => 'Page1'));
         $page2 = $this->createPageWithChanges(array('Title' => 'Page2'));
@@ -173,7 +185,7 @@ class VersionFeedFunctionalTest extends FunctionalTest
         $this->assertContains('Changed: Page2', $titles);
     }
 
-    public function testContainsAllChangesForAllPages()
+    public function testAllChangesActionContainsAllChangesForAllPages()
     {
         $page1 = $this->createPageWithChanges(array('Title' => 'Page1'));
         $page2 = $this->createPageWithChanges(array('Title' => 'Page2'));
@@ -181,7 +193,7 @@ class VersionFeedFunctionalTest extends FunctionalTest
         $response = $this->get($page1->RelativeLink('allchanges'));
         $xml = simplexml_load_string($response->getBody());
         $titles = array_map(function ($item) {
-            return (string)$item->title;
+            return str_replace('Changed: ', '', (string) $item->title);
         }, $xml->xpath('//item'));
         $this->assertContains('Page1', $titles);
         $this->assertContains('Page2', $titles);
@@ -197,21 +209,21 @@ class VersionFeedFunctionalTest extends FunctionalTest
         ), $seed);
         $page->update($seed);
         $page->write();
-        $page->publish('Stage', 'Live');
+        $page->copyVersionToStage(Versioned::DRAFT, Versioned::LIVE);
 
         $page->update(array(
             'Title' => 'Changed: ' . $seed['Title'],
             'Content' => 'Changed: ' . $seed['Content'],
         ));
         $page->write();
-        $page->publish('Stage', 'Live');
+        $page->copyVersionToStage(Versioned::DRAFT, Versioned::LIVE);
 
         $page->update(array(
             'Title' => 'Changed again: ' . $seed['Title'],
             'Content' => 'Changed again: ' . $seed['Content'],
         ));
         $page->write();
-        $page->publish('Stage', 'Live');
+        $page->copyVersionToStage(Versioned::DRAFT, Versioned::LIVE);
 
         $page->update(array(
             'Title' => 'Unpublished: ' . $seed['Title'],
@@ -223,7 +235,7 @@ class VersionFeedFunctionalTest extends FunctionalTest
     }
 
     /**
-     * Tests response code for globally disabled feedss
+     * Tests response code for globally disabled feeds
      */
     public function testFeedViewability()
     {

@@ -23,8 +23,10 @@ for the current page. You can override this behaviour by defining the `getDefaul
 and returning the URL of your desired RSS feed:
 
 ```php
-class MyPage extends Page {
-	function getDefaultRSSLink() {
+class MyPage extends Page
+{
+	public function getDefaultRSSLink()
+	{
 		return $this->Link('myrssfeed');
 	}
 }
@@ -34,7 +36,7 @@ This can be used in templates as `$DefaultRSSLink`.
 
 ### Rate limiting and caching
 
-By default all content is filtered based on the rules specified in `versionfeed/_config/versionfeed.yml`.
+By default all content is filtered based on the rules specified in `vendor/silverstripe/versionfeed/_config/versionfeed.yml`.
 Two filters are applied on top of one another:
 
  * `SilverStripe\VersionFeed\Filters\CachedContentFilter` provides caching of versions based on an identifier built up of the record ID and the 

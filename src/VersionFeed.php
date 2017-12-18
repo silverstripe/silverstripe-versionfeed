@@ -2,16 +2,16 @@
 
 namespace SilverStripe\VersionFeed;
 
-use SilverStripe\ORM\FieldType\DBField;
-use SilverStripe\View\Parsers\Diff;
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\Forms\FieldList;
+use SilverStripe\CMS\Model\SiteTreeExtension;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\FieldGroup;
-use SilverStripe\Forms\LiteralField;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\ORM\ArrayList;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\SiteConfig\SiteConfig;
-use SilverStripe\CMS\Model\SiteTreeExtension;
+use SilverStripe\View\Parsers\Diff;
 
 class VersionFeed extends SiteTreeExtension
 {
@@ -146,7 +146,7 @@ class VersionFeed extends SiteTreeExtension
      * Return a single diff representing this version.
      * Returns the initial version if there is nothing to compare to.
      *
-     * @returns DataObject Object with relevant fields diffed.
+     * @return DataObject|null Object with relevant fields diffed.
      */
     public function getDiff()
     {
@@ -179,32 +179,34 @@ class VersionFeed extends SiteTreeExtension
 
     public function updateSettingsFields(FieldList $fields)
     {
-        if (!Config::inst()->get(get_class(), 'changes_enabled')) {
+        if (!$this->owner->config()->get('changes_enabled')) {
             return;
         }
         
         // Add public history field.
-        $fields->addFieldToTab('Root.Settings', $publicHistory = new FieldGroup(
-            new CheckboxField('PublicHistory', $this->owner->fieldLabel('PublicHistory'))
-        ));
-
-        $warning = _t(
-            __CLASS__ . '.Warning',
-            "Publicising the history will also disclose the changes that have at the time been protected " .
-            "from the public view."
+        $fields->addFieldToTab(
+            'Root.Settings',
+            $publicHistory = FieldGroup::create(
+                CheckboxField::create('PublicHistory', $this->owner->fieldLabel('PublicHistory'))
+            )
+                ->setDescription(_t(
+                    __CLASS__ . '.Warning',
+                    "Publicising the history will also disclose the changes that have at the "
+                    . "time been protected from the public view."
+                ))
         );
 
-        $fields->addFieldToTab('Root.Settings', new LiteralField('PublicHistoryWarning', $warning), 'PublicHistory');
-
-        if ($this->owner->CanViewType!='Anyone') {
-            $warning = _t(
-                __CLASS__ . '.Warning2',
-                "Changing access settings in such a way that this page or pages under it become publicly<br>" .
-                "accessible may result in publicising all historical changes on these pages too. Please review<br>" .
-                "this section's \"Public history\" settings to ascertain only intended information is disclosed."
-            );
-
-            $fields->addFieldToTab('Root.Settings', new LiteralField('PublicHistoryWarning2', $warning), 'CanViewType');
+        if ($this->owner->CanViewType != 'Anyone') {
+            $canViewType = $fields->fieldByName('Root.Settings.CanViewType');
+            if ($canViewType) {
+                $canViewType->setDescription(_t(
+                    __CLASS__ . '.Warning2',
+                    "Changing access settings in such a way that this page or pages under it become publicly<br>"
+                    . "accessible may result in publicising all historical changes on these pages too. Please review"
+                    . "<br> this section's \"Public history\" settings to ascertain only intended information is "
+                    . "disclosed."
+                ));
+            }
         }
     }
 
