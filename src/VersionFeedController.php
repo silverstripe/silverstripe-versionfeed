@@ -128,8 +128,8 @@ class VersionFeedController extends Extension
                     // Check if the page should be visible.
                     // WARNING: although we are providing historical details, we check the current configuration.
                     $id = $record['RecordID'];
-                    $page = DataObject::get_by_id(SiteTree::class, $id);
                     if (!isset($canView[$id])) {
+                        $page = DataObject::get_by_id(SiteTree::class, $id);
                         $canView[$id] = $page && $page->canView(Security::getCurrentUser());
                     }
                     if (!$canView[$id]) {
@@ -137,7 +137,8 @@ class VersionFeedController extends Extension
                     }
 
                     // Get the diff to the previous version.
-                    $version = $page;
+                    $record['ID'] = $record['RecordID'];
+                    $version = SiteTree::create($record);
                     if ($diff = $version->getDiff()) {
                         $changeList->push($diff);
                     }

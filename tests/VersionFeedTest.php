@@ -33,11 +33,11 @@ class VersionFeedTest extends SapphireTest
     {
         $page = new Page(['Title' => 'My Title']);
         $page->write();
-        $page->copyVersionToStage(Versioned::STAGE, Versioned::LIVE);
+        $page->copyVersionToStage(Versioned::DRAFT, Versioned::LIVE);
     
         $page->Title = 'My Changed Title';
         $page->write();
-        $page->copyVersionToStage(Versioned::STAGE, Versioned::LIVE);
+        $page->copyVersionToStage(Versioned::DRAFT, Versioned::LIVE);
 
         $page->Title = 'My Unpublished Changed Title';
         $page->write();

@@ -54,7 +54,7 @@ class VersionFeedFunctionalTest extends FunctionalTest
         Config::modify()->set(RateLimitFilter::class, 'lock_cooldown', false);
     }
 
-    public function tearDown()
+    protected function tearDown()
     {
         Director::config()->set('alternate_base_url', null);
         
@@ -68,24 +68,37 @@ class VersionFeedFunctionalTest extends FunctionalTest
         $page = $this->createPageWithChanges(array('PublicHistory' => false));
 
         $response = $this->get($page->RelativeLink('changes'));
-        $this->assertEquals(404, $response->getStatusCode());
+        $this->assertEquals(
+            404,
+            $response->getStatusCode(),
+            'With Page\'s "PublicHistory" disabled, `changes` action response code should be 404'
+        );
 
         $response = $this->get($page->RelativeLink('allchanges'));
         $this->assertEquals(200, $response->getStatusCode());
         $xml = simplexml_load_string($response->getBody());
-        $this->assertFalse((bool)$xml->channel->item);
+        $this->assertFalse(
+            (bool)$xml->channel->item,
+            'With Page\'s "PublicHistory" disabled, `allchanges` action should not have an item in the channel'
+        );
 
         $page = $this->createPageWithChanges(array('PublicHistory' => true));
 
         $response = $this->get($page->RelativeLink('changes'));
         $this->assertEquals(200, $response->getStatusCode());
         $xml = simplexml_load_string($response->getBody());
-        $this->assertTrue((bool)$xml->channel->item);
+        $this->assertTrue(
+            (bool)$xml->channel->item,
+            'With Page\'s "PublicHistory" enabled, `changes` action should have an item in the channel'
+        );
 
         $response = $this->get($page->RelativeLink('allchanges'));
         $this->assertEquals(200, $response->getStatusCode());
         $xml = simplexml_load_string($response->getBody());
-        $this->assertTrue((bool)$xml->channel->item);
+        $this->assertTrue(
+            (bool)$xml->channel->item,
+            'With "PublicHistory" enabled, `allchanges` action should have an item in the channel'
+        );
     }
 
     public function testRateLimiting()
@@ -148,7 +161,7 @@ class VersionFeedFunctionalTest extends FunctionalTest
         Config::modify()->set(CachedContentFilter::class, 'cache_enabled', false);
     }
 
-    public function testContainsChangesForPageOnly()
+    public function testChangesActionContainsChangesForCurrentPageOnly()
     {
         $page1 = $this->createPageWithChanges(array('Title' => 'Page1'));
         $page2 = $this->createPageWithChanges(array('Title' => 'Page2'));
@@ -172,7 +185,7 @@ class VersionFeedFunctionalTest extends FunctionalTest
         $this->assertContains('Changed: Page2', $titles);
     }
 
-    public function testContainsAllChangesForAllPages()
+    public function testAllChangesActionContainsAllChangesForAllPages()
     {
         $page1 = $this->createPageWithChanges(array('Title' => 'Page1'));
         $page2 = $this->createPageWithChanges(array('Title' => 'Page2'));
