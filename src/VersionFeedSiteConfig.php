@@ -2,11 +2,10 @@
 
 namespace SilverStripe\VersionFeed;
 
-use SilverStripe\Forms\FieldList;
 use SilverStripe\Core\Config\Config;
-use SilverStripe\VersionFeed\VersionFeed;
 use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\FieldGroup;
+use SilverStripe\Forms\FieldList;
 use SilverStripe\ORM\DataExtension;
 
 /**
@@ -39,7 +38,7 @@ class VersionFeedSiteConfig extends DataExtension
             FieldGroup::create(new CheckboxField('AllChangesEnabled', $this->owner->fieldLabel('AllChangesEnabled')))
                 ->setTitle(_t(__CLASS__ . '.ALLCHANGES', 'All page changes'))
                 ->setDescription(_t(
-                    __CLASS__ . '.Warning',
+                    'SilverStripe\\VersionFeed\\VersionFeed.Warning',
                     "Publicising the history will also disclose the changes that have at the time been protected " .
                     "from the public view."
                 ))

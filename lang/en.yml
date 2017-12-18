@@ -9,4 +9,3 @@ en:
   SilverStripe\VersionFeed\VersionFeedSiteConfig:
     ALLCHANGES: 'All page changes'
     ALLCHANGESLABEL: 'Make global changes feed public'
-    Warning: 'Publicising the history will also disclose the changes that have at the time been protected from the public view.'
