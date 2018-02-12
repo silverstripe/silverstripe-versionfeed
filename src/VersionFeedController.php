@@ -77,7 +77,7 @@ class VersionFeedController extends Extension
 
         // Cache the diffs to remove DOS possibility.
         $target = $this->owner;
-        $key = implode('_', array('changes', $this->owner->ID, $this->owner->Version));
+        $key = implode('_', array('changes', $target->ID, $target->Version));
         $entries = $this->filterContent($key, function () use ($target) {
             return $target->getDiffList(null, Config::inst()->get(VersionFeed::class, 'changes_limit'));
         });
