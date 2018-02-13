@@ -39,7 +39,7 @@ abstract class ContentFilter
     /**
      * Gets the cache to use
      *
-     * @return Zend_Cache_Frontend
+     * @return CacheInterface
      */
     protected function getCache()
     {

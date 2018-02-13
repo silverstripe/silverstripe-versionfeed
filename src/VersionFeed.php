@@ -12,6 +12,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\View\Parsers\Diff;
+use SilverStripe\CMS\Model\SiteTree;
 
 class VersionFeed extends SiteTreeExtension
 {
@@ -114,7 +115,16 @@ class VersionFeed extends SiteTreeExtension
                 }
 
                 // Copy the link so it can be cached.
-                $version->GeneratedLink = $version->AbsoluteLink();
+                $oldPage = $version->getField('object');
+                if (!$oldPage instanceof SiteTree) {
+                    // We only need enough info to generate the link...
+                    $oldPage = SiteTree::create([
+                        'ID' => $oldPage->ID,
+                        'URLSegment' => $oldPage->URLSegment,
+                        'ParentID' => $oldPage->ParentID
+                    ]);
+                }
+                $version->GeneratedLink = $oldPage->AbsoluteLink();
             }
 
             // Omit the versions that haven't been visibly changed (only takes the above fields into consideration).
