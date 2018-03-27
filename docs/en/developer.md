@@ -9,11 +9,14 @@ the extensions defined on the extension.
 
 ### Enabling / Disabling
 
-The `allchanges` feed can be disabled by setting the `SilverStripe\VersionFeed\VersionFeed.allchanges_enabled` config to false.
+By default the `allchanges` and `changes` feed are disabled.
 
-Likewise, the `changes` feed for each page can be globally disabled by setting the `SilverStripe\VersionFeed\VersionFeed.changes_enabled`
-config to false. If this left true, then each page can still be individually disabled by unchecking the
-'Make History Public' checkbox in the CMS under page settings.
+The `allchanges` feed can be enabled by setting the `SilverStripe\VersionFeed\VersionFeed.allchanges_enabled` config to true. If this is true, then the allchanges feed can still be disabled by unchecking the "All page changes" checkbox in the "Settings" section in the CMS. 
+
+Likewise, the `changes` feed for each page can be globally enabled by setting the `SilverStripe\VersionFeed\VersionFeed.changes_enabled`
+config to true. If this is true, then each page can still be individually disabled by unchecking the
+'Make history public' checkbox in the CMS under page settings.
+
 See [user documentation on enabling / disabling](userguide/index.md#enabling--disabling).
 
 ### Default RSS action
