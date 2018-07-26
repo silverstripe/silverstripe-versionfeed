@@ -5,13 +5,14 @@ namespace SilverStripe\VersionFeed\Filters;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\HTTPResponse_Exception;
+use SilverStripe\Versioned\Versioned;
 
 /**
  * Provides rate limiting of execution of a callback
  */
 class RateLimitFilter extends ContentFilter
 {
-    
+
     /**
      * Time duration (in second) to allow for generation of cached results. Requests to
      * pages that within this time period that do not hit the cache (and would otherwise trigger
@@ -21,7 +22,7 @@ class RateLimitFilter extends ContentFilter
      * @var int
      */
     private static $lock_timeout = 5;
-    
+
     /**
      * Determine if the cache generation should be locked on a per-page basis. If true, concurrent page versions
      * may be generated without rate interference.
@@ -30,7 +31,7 @@ class RateLimitFilter extends ContentFilter
      * @var bool
      */
     private static $lock_bypage = false;
-    
+
     /**
      * Determine if rate limiting should be applied independently to each IP address. This method is not
      * reliable, as most DDoS attacks use multiple IP addresses.
@@ -49,12 +50,12 @@ class RateLimitFilter extends ContentFilter
      * @var int
      */
     private static $lock_cooldown = 2;
-    
+
     /**
      * Cache key prefix
      */
     const CACHE_PREFIX = 'RateLimitBegin';
-    
+
     /**
      * Determines the key to use for saving the current rate
      *
@@ -64,18 +65,18 @@ class RateLimitFilter extends ContentFilter
     protected function getCacheKey($itemkey)
     {
         $key = self::CACHE_PREFIX;
-        
+
         // Add global identifier
         if ($this->config()->get('lock_bypage')) {
             $key .= '_' . md5($itemkey);
         }
-        
+
         // Add user-specific identifier
         if ($this->config()->get('lock_byuserip') && Controller::has_curr()) {
             $ip = Controller::curr()->getRequest()->getIP();
             $key .= '_' . md5($ip);
         }
-        
+
         return $key;
     }
 
@@ -87,7 +88,7 @@ class RateLimitFilter extends ContentFilter
         if (isset($_GET['flush']) || !$timeout) {
             return parent::getContent($key, $callback);
         }
-        
+
         // Generate result with rate limiting enabled
         $limitKey = $this->getCacheKey($key);
         $cache = $this->getCache();
@@ -101,10 +102,10 @@ class RateLimitFilter extends ContentFilter
         }
 
         $lifetime = Config::inst()->get(ContentFilter::class, 'cache_lifetime') ?: null;
-        
+
         // Apply rate limit
         $cache->set($limitKey, time() + $timeout, $lifetime);
-        
+
         // Generate results
         $result = parent::getContent($key, $callback);
 

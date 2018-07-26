@@ -3,9 +3,11 @@
 namespace SilverStripe\VersionFeed\Tests;
 
 use Page;
+use PageController;
 use Psr\SimpleCache\CacheInterface;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
+use SilverStripe\Core\Cache\CacheFactory;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\FunctionalTest;
@@ -19,26 +21,31 @@ use SilverStripe\VersionFeed\VersionFeedController;
 class VersionFeedFunctionalTest extends FunctionalTest
 {
     protected $usesDatabase = true;
-    
+
     protected $baseURI = 'http://www.fakesite.test';
 
-    protected static $required_extensions = array(
-        'Page' => array(VersionFeed::class),
-        'PageController' => array(VersionFeedController::class),
-    );
+    protected static $required_extensions = [
+        Page::class => [VersionFeed::class],
+        PageController::class => [VersionFeedController::class],
+    ];
 
     protected $userIP;
+
+    /**
+     * @var CacheInterface
+     */
+    protected $cache;
 
     protected function setUp()
     {
         Director::config()->set('alternate_base_url', $this->baseURI);
-        
+
         parent::setUp();
 
-        $cache = Injector::inst()->get(
+        $this->cache = Injector::inst()->get(
             CacheInterface::class . '.VersionFeedController'
         );
-        $cache->clear();
+        $this->cache->clear();
 
         $this->userIP = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : null;
 
@@ -52,20 +59,23 @@ class VersionFeedFunctionalTest extends FunctionalTest
         Config::modify()->set(RateLimitFilter::class, 'lock_bypage', false);
         Config::modify()->set(RateLimitFilter::class, 'lock_byuserip', false);
         Config::modify()->set(RateLimitFilter::class, 'lock_cooldown', false);
+
+        // Ensure any version based caches read from the live cache
+        Versioned::set_reading_mode(Versioned::DEFAULT_MODE);
     }
 
     protected function tearDown()
     {
         Director::config()->set('alternate_base_url', null);
-        
+
         $_SERVER['REMOTE_ADDR'] = $this->userIP;
 
         parent::tearDown();
     }
 
-    public function testPublicHistory()
+    public function testPublicHistoryPublicHistoryDisabled()
     {
-        $page = $this->createPageWithChanges(array('PublicHistory' => false));
+        $page = $this->createPageWithChanges(['PublicHistory' => false]);
 
         $response = $this->get($page->RelativeLink('changes'));
         $this->assertEquals(
@@ -81,8 +91,11 @@ class VersionFeedFunctionalTest extends FunctionalTest
             (bool)$xml->channel->item,
             'With Page\'s "PublicHistory" disabled, `allchanges` action should not have an item in the channel'
         );
+    }
 
-        $page = $this->createPageWithChanges(array('PublicHistory' => true));
+    public function testPublicHistoryPublicHistoryEnabled()
+    {
+        $page = $this->createPageWithChanges(['PublicHistory' => true]);
 
         $response = $this->get($page->RelativeLink('changes'));
         $this->assertEquals(200, $response->getStatusCode());
@@ -107,15 +120,11 @@ class VersionFeedFunctionalTest extends FunctionalTest
         Config::modify()->set(RateLimitFilter::class, 'lock_timeout', 20);
         Config::modify()->set(CachedContentFilter::class, 'cache_enabled', true);
 
-        $page1 = $this->createPageWithChanges(array('PublicHistory' => true, 'Title' => 'Page1'));
-        $page2 = $this->createPageWithChanges(array('PublicHistory' => true, 'Title' => 'Page2'));
+        $page1 = $this->createPageWithChanges(['PublicHistory' => true, 'Title' => 'Page1']);
+        $page2 = $this->createPageWithChanges(['PublicHistory' => true, 'Title' => 'Page2']);
 
         // Artifically set cache lock
-        Config::modify()->set(RateLimitFilter::class, 'lock_byuserip', false);
-        $cache = Injector::inst()->get(
-            CacheInterface::class . '.VersionFeedController'
-        );
-        $cache->set(RateLimitFilter::CACHE_PREFIX, time() + 10);
+        $this->cache->set(RateLimitFilter::CACHE_PREFIX, time() + 10);
 
         // Test normal hit
         $response = $this->get($page1->RelativeLink('changes'));
@@ -127,13 +136,13 @@ class VersionFeedFunctionalTest extends FunctionalTest
 
         // Test page specific lock
         Config::modify()->set(RateLimitFilter::class, 'lock_bypage', true);
-        $key = implode('_', array(
+        $key = implode('_', [
             'changes',
             $page1->ID,
             Versioned::get_versionnumber_by_stage(SiteTree::class, 'Live', $page1->ID, false)
-        ));
+        ]);
         $key = RateLimitFilter::CACHE_PREFIX . '_' . md5($key);
-        $cache->set($key, time() + 10);
+        $this->cache->set($key, time() + 10);
         $response = $this->get($page1->RelativeLink('changes'));
         $this->assertEquals(429, $response->getStatusCode());
         $this->assertGreaterThan(0, $response->getHeader('Retry-After'));
@@ -144,27 +153,22 @@ class VersionFeedFunctionalTest extends FunctionalTest
         // Test rate limit hit by IP
         Config::modify()->set(RateLimitFilter::class, 'lock_byuserip', true);
         $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
-        $cache->set(RateLimitFilter::CACHE_PREFIX . '_' . md5('127.0.0.1'), time() + 10);
+        $this->cache->set(RateLimitFilter::CACHE_PREFIX . '_' . md5('127.0.0.1'), time() + 10);
         $response = $this->get($page1->RelativeLink('changes'));
         $this->assertEquals(429, $response->getStatusCode());
         $this->assertGreaterThan(0, $response->getHeader('Retry-After'));
 
         // Test rate limit doesn't hit other IP
         $_SERVER['REMOTE_ADDR'] = '127.0.0.20';
-        $cache->set(RateLimitFilter::CACHE_PREFIX . '_' . md5('127.0.0.1'), time() + 10);
+        $this->cache->set(RateLimitFilter::CACHE_PREFIX . '_' . md5('127.0.0.1'), time() + 10);
         $response = $this->get($page1->RelativeLink('changes'));
         $this->assertEquals(200, $response->getStatusCode());
-
-        // Restore setting
-        Config::modify()->set(RateLimitFilter::class, 'lock_byuserip', false);
-        Config::modify()->set(RateLimitFilter::class, 'lock_timeout', 0);
-        Config::modify()->set(CachedContentFilter::class, 'cache_enabled', false);
     }
 
     public function testChangesActionContainsChangesForCurrentPageOnly()
     {
-        $page1 = $this->createPageWithChanges(array('Title' => 'Page1'));
-        $page2 = $this->createPageWithChanges(array('Title' => 'Page2'));
+        $page1 = $this->createPageWithChanges(['Title' => 'Page1']);
+        $page2 = $this->createPageWithChanges(['Title' => 'Page2']);
 
         $response = $this->get($page1->RelativeLink('changes'));
         $xml = simplexml_load_string($response->getBody());
@@ -187,8 +191,8 @@ class VersionFeedFunctionalTest extends FunctionalTest
 
     public function testAllChangesActionContainsAllChangesForAllPages()
     {
-        $page1 = $this->createPageWithChanges(array('Title' => 'Page1'));
-        $page2 = $this->createPageWithChanges(array('Title' => 'Page2'));
+        $page1 = $this->createPageWithChanges(['Title' => 'Page1']);
+        $page2 = $this->createPageWithChanges(['Title' => 'Page2']);
 
         $response = $this->get($page1->RelativeLink('allchanges'));
         $xml = simplexml_load_string($response->getBody());
@@ -203,32 +207,32 @@ class VersionFeedFunctionalTest extends FunctionalTest
     {
         $page = new Page();
 
-        $seed = array_merge(array(
+        $seed = array_merge([
             'Title' => 'My Title',
             'Content' => 'My Content'
-        ), $seed);
+        ], $seed);
         $page->update($seed);
         $page->write();
-        $page->copyVersionToStage(Versioned::DRAFT, Versioned::LIVE);
+        $page->publishSingle();
 
-        $page->update(array(
+        $page->update([
             'Title' => 'Changed: ' . $seed['Title'],
             'Content' => 'Changed: ' . $seed['Content'],
-        ));
+        ]);
         $page->write();
-        $page->copyVersionToStage(Versioned::DRAFT, Versioned::LIVE);
+        $page->publishSingle();
 
-        $page->update(array(
+        $page->update([
             'Title' => 'Changed again: ' . $seed['Title'],
             'Content' => 'Changed again: ' . $seed['Content'],
-        ));
+        ]);
         $page->write();
-        $page->copyVersionToStage(Versioned::DRAFT, Versioned::LIVE);
+        $page->publishSingle();
 
-        $page->update(array(
+        $page->update([
             'Title' => 'Unpublished: ' . $seed['Title'],
             'Content' => 'Unpublished: ' . $seed['Content'],
-        ));
+        ]);
         $page->write();
 
         return $page;
@@ -241,11 +245,11 @@ class VersionFeedFunctionalTest extends FunctionalTest
     {
 
         // Nested loop through each configuration
-        foreach (array(true, false) as $publicHistory_Page) {
-            $page = $this->createPageWithChanges(array('PublicHistory' => $publicHistory_Page, 'Title' => 'Page'));
+        foreach ([true, false] as $publicHistory_Page) {
+            $page = $this->createPageWithChanges(['PublicHistory' => $publicHistory_Page, 'Title' => 'Page']);
 
             // Test requests to 'changes' action
-            foreach (array(true, false) as $publicHistory_Config) {
+            foreach ([true, false] as $publicHistory_Config) {
                 Config::modify()->set(VersionFeed::class, 'changes_enabled', $publicHistory_Config);
                 $expectedResponse = $publicHistory_Page && $publicHistory_Config ? 200 : 404;
                 $response = $this->get($page->RelativeLink('changes'));
@@ -253,8 +257,8 @@ class VersionFeedFunctionalTest extends FunctionalTest
             }
 
             // Test requests to 'allchanges' action on each page
-            foreach (array(true, false) as $allChanges_Config) {
-                foreach (array(true, false) as $allChanges_SiteConfig) {
+            foreach ([true, false] as $allChanges_Config) {
+                foreach ([true, false] as $allChanges_SiteConfig) {
                     Config::modify()->set(VersionFeed::class, 'allchanges_enabled', $allChanges_Config);
                     $siteConfig = SiteConfig::current_site_config();
                     $siteConfig->AllChangesEnabled = $allChanges_SiteConfig;
