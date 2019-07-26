@@ -70,6 +70,7 @@ class VersionFeedFunctionalTest extends FunctionalTest {
 		$page1 = $this->createPageWithChanges(array('PublicHistory' => true, 'Title' => 'Page1'));
 		$page2 = $this->createPageWithChanges(array('PublicHistory' => true, 'Title' => 'Page2'));
 
+		Versioned::set_reading_mode(Versioned::DEFAULT_MODE);
 		// Artifically set cache lock
 		Config::inst()->update('VersionFeed\Filters\RateLimitFilter', 'lock_byuserip', false);
 		$cache = SS_Cache::factory('VersionFeed_Controller');
