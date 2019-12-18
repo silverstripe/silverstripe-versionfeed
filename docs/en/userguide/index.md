@@ -1,5 +1,7 @@
+---
 title: Content change RSS
 summary: Adds page or site wide RSS feeds that display content changes
+---
 
 # Content change RSS
 
