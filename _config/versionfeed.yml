@@ -6,7 +6,7 @@ SilverStripe\Core\Injector\Injector:
   ContentFilter:
     class: SilverStripe\VersionFeed\Filters\CachedContentFilter
     constructor:
-      - %$RateLimitFilter
+      - '%$RateLimitFilter'
   Psr\SimpleCache\CacheInterface.VersionFeedController:
     factory: SilverStripe\Core\Cache\CacheFactory
     constructor:
@@ -22,4 +22,4 @@ SilverStripe\CMS\Controllers\ContentController:
     - SilverStripe\VersionFeed\VersionFeedController
 SilverStripe\VersionFeed\VersionFeedController:
   dependencies:
-    ContentFilter: %$ContentFilter
+    ContentFilter: '%$ContentFilter'
