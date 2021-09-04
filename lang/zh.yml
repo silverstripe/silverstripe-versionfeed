@@ -1,8 +1,8 @@
 zh:
   SilverStripe\VersionFeed\VersionFeed:
-    LABEL: '将历史记录公开'
+    LABEL: 将历史记录公开
     SINGLEPAGEFEEDTITLE: '更新至 {title} 页面'
     SITEFEEDTITLE: '更新至 {title}'
-    TITLECHANGED: '标题已更改：'
-    Warning: '发布历史记录还会在公开视图中显示受保护事件内进行的改动。'
-    Warning2: '用这种方式更改访问设置会使得本页及下级页面变为公开的<br>可能还会使得这些页面的所有变动历史记录也变为公开的。请查阅<br>本节的“公开历史记录”设置，确保只将需要的信息披露出来。'
+    TITLECHANGED: 标题已更改：
+    Warning: 发布历史记录还会在公开视图中显示受保护事件内进行的改动。
+    Warning2: 用这种方式更改访问设置会使得本页及下级页面变为公开的<br>可能还会使得这些页面的所有变动历史记录也变为公开的。请查阅<br>本节的“公开历史记录”设置，确保只将需要的信息披露出来。
