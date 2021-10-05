@@ -5,7 +5,6 @@ sl:
     SITEFEEDTITLE: 'Posodobitve {title}'
     TITLECHANGED: 'Spremenjen naslov:'
     Warning: 'Objava zgodovine bo razkrila tudi spremembe, ki do sedaj niso bile javno objavljene.'
-    Warning2: 'Sprememba nastavitev dostopa tako, da so so ta stran ali njene podstrani dostopne javnosti, <br> lahko povzroči objavo tudi vseh sprememb na omenjenih straneh. Podrobno preverite <br> seznam sprememb in se prepričajte, da boste razkrili samo tiste informacije, ki jih želite.'
   SilverStripe\VersionFeed\VersionFeedSiteConfig:
     ALLCHANGES: 'Vse spremembe'
     ALLCHANGESLABEL: 'Javno objavi seznam s krovnimi spremembami'

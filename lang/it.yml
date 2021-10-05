@@ -5,7 +5,6 @@ it:
     SITEFEEDTITLE: 'Aggiornare a {title}'
     TITLECHANGED: 'Il titolo è cambiato:'
     Warning: 'Pubblicare la cronologia divulgherà anche i cambiamenti che sono stati precedentemente protetti dalla vista pubblica.'
-    Warning2: 'Cambiare la modalità di accesso in modo che la pagina o le pagine sottostanti diventino pubbliche<br>può comportare la pubblicazione della cronologia dei cambiamenti di queste pagine. Si prega di rivedere<br>le impostazioni della sezione "Cronologia pubblica" per assicurarsi che siano divulgate solo le informazioni desiderate.'
   SilverStripe\VersionFeed\VersionFeedSiteConfig:
     ALLCHANGES: 'Tutti i cambiamenti pagina'
     ALLCHANGESLABEL: 'Rendere pubblico il feed dei cambiamenti globali'

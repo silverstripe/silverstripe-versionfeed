@@ -5,7 +5,6 @@ hr:
     SITEFEEDTITLE: 'Ažuriranja za {title}'
     TITLECHANGED: 'Naziv se promijenio:'
     Warning: 'Objavom povijesti će se također otkriti promjene koje su u to vrijeme bili zaštićeni od očiju javnosti.'
-    Warning2: 'Promjenom postavki pristupi na takav način će učiniti da ova stranica ili stranice ispod nje postanu javno<br>dostupne mogu rezultirati objavomm svih povijesnih promjena na tim stranicama također. Molimo pregledajte<br>podatke sekcije "Public history" da budete sigurni samo željene informacije da su prikazane.'
   SilverStripe\VersionFeed\VersionFeedSiteConfig:
     ALLCHANGES: 'Sve promjene stranice'
     ALLCHANGESLABEL: 'Učini sveobuhvatne promjene feeda'
