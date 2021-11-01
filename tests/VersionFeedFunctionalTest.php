@@ -36,7 +36,7 @@ class VersionFeedFunctionalTest extends FunctionalTest
      */
     protected $cache;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         Director::config()->set('alternate_base_url', $this->baseURI);
 
@@ -64,7 +64,7 @@ class VersionFeedFunctionalTest extends FunctionalTest
         Versioned::set_reading_mode(Versioned::DEFAULT_MODE);
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         Director::config()->set('alternate_base_url', null);
 
