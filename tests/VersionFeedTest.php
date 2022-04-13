@@ -44,18 +44,18 @@ class VersionFeedTest extends SapphireTest
 
         // Strip spaces from test output because they're not reliably maintained by the HTML Tidier
         $cleanDiffOutput = function ($val) {
-            return str_replace(' ', '', strip_tags($val));
+            return str_replace(' ', '', strip_tags($val ?? ''));
         };
 
         $this->assertContains(
             str_replace(' ', '', _t('RSSHistory.TITLECHANGED', 'Title has changed:') . 'My Changed Title'),
-            array_map($cleanDiffOutput, $page->getDiffList()->column('DiffTitle')),
+            array_map($cleanDiffOutput, $page->getDiffList()->column('DiffTitle') ?? []),
             'Detects published title changes'
         );
 
         $this->assertNotContains(
             str_replace(' ', '', _t('RSSHistory.TITLECHANGED', 'Title has changed:') . 'My Unpublished Changed Title'),
-            array_map($cleanDiffOutput, $page->getDiffList()->column('DiffTitle')),
+            array_map($cleanDiffOutput, $page->getDiffList()->column('DiffTitle') ?? []),
             'Ignores unpublished title changes'
         );
     }

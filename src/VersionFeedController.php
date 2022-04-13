@@ -119,7 +119,7 @@ class VersionFeedController extends Extension
         if ($lastChange) {
             // Cache the diffs to remove DOS possibility.
             $key = 'allchanges'
-                . preg_replace('#[^a-zA-Z0-9_]#', '', $lastChange['LastEdited'])
+                . preg_replace('#[^a-zA-Z0-9_]#', '', $lastChange['LastEdited'] ?? '')
                 . (Security::getCurrentUser() ? Security::getCurrentUser()->ID : 'public');
             $changeList = $this->filterContent($key, function () use ($latestChanges) {
                 $changeList = new ArrayList();

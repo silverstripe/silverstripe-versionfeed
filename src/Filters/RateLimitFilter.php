@@ -68,13 +68,13 @@ class RateLimitFilter extends ContentFilter
 
         // Add global identifier
         if ($this->config()->get('lock_bypage')) {
-            $key .= '_' . md5($itemkey);
+            $key .= '_' . md5($itemkey ?? '');
         }
 
         // Add user-specific identifier
         if ($this->config()->get('lock_byuserip') && Controller::has_curr()) {
             $ip = Controller::curr()->getRequest()->getIP();
-            $key .= '_' . md5($ip);
+            $key .= '_' . md5($ip ?? '');
         }
 
         return $key;
