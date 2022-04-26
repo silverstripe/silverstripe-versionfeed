@@ -86,7 +86,7 @@ class VersionFeedFunctionalTest extends FunctionalTest
 
         $response = $this->get($page->RelativeLink('allchanges'));
         $this->assertEquals(200, $response->getStatusCode());
-        $xml = simplexml_load_string($response->getBody());
+        $xml = simplexml_load_string($response->getBody() ?? '');
         $this->assertFalse(
             (bool)$xml->channel->item,
             'With Page\'s "PublicHistory" disabled, `allchanges` action should not have an item in the channel'
@@ -99,7 +99,7 @@ class VersionFeedFunctionalTest extends FunctionalTest
 
         $response = $this->get($page->RelativeLink('changes'));
         $this->assertEquals(200, $response->getStatusCode());
-        $xml = simplexml_load_string($response->getBody());
+        $xml = simplexml_load_string($response->getBody() ?? '');
         $this->assertTrue(
             (bool)$xml->channel->item,
             'With Page\'s "PublicHistory" enabled, `changes` action should have an item in the channel'
@@ -107,7 +107,7 @@ class VersionFeedFunctionalTest extends FunctionalTest
 
         $response = $this->get($page->RelativeLink('allchanges'));
         $this->assertEquals(200, $response->getStatusCode());
-        $xml = simplexml_load_string($response->getBody());
+        $xml = simplexml_load_string($response->getBody() ?? '');
         $this->assertTrue(
             (bool)$xml->channel->item,
             'With "PublicHistory" enabled, `allchanges` action should have an item in the channel'
@@ -141,7 +141,7 @@ class VersionFeedFunctionalTest extends FunctionalTest
             $page1->ID,
             Versioned::get_versionnumber_by_stage(SiteTree::class, 'Live', $page1->ID, false)
         ]);
-        $key = RateLimitFilter::CACHE_PREFIX . '_' . md5($key);
+        $key = RateLimitFilter::CACHE_PREFIX . '_' . md5($key ?? '');
         $this->cache->set($key, time() + 10);
         $response = $this->get($page1->RelativeLink('changes'));
         $this->assertEquals(429, $response->getStatusCode());
@@ -171,19 +171,19 @@ class VersionFeedFunctionalTest extends FunctionalTest
         $page2 = $this->createPageWithChanges(['Title' => 'Page2']);
 
         $response = $this->get($page1->RelativeLink('changes'));
-        $xml = simplexml_load_string($response->getBody());
+        $xml = simplexml_load_string($response->getBody() ?? '');
         $titles = array_map(function ($item) {
             return (string)$item->title;
-        }, $xml->xpath('//item'));
+        }, $xml->xpath('//item') ?? []);
         // TODO Unclear if this should contain the original version
         $this->assertContains('Changed: Page1', $titles);
         $this->assertNotContains('Changed: Page2', $titles);
 
         $response = $this->get($page2->RelativeLink('changes'));
-        $xml = simplexml_load_string($response->getBody());
+        $xml = simplexml_load_string($response->getBody() ?? '');
         $titles = array_map(function ($item) {
             return (string)$item->title;
-        }, $xml->xpath('//item'));
+        }, $xml->xpath('//item') ?? []);
         // TODO Unclear if this should contain the original version
         $this->assertNotContains('Changed: Page1', $titles);
         $this->assertContains('Changed: Page2', $titles);
@@ -195,10 +195,10 @@ class VersionFeedFunctionalTest extends FunctionalTest
         $page2 = $this->createPageWithChanges(['Title' => 'Page2']);
 
         $response = $this->get($page1->RelativeLink('allchanges'));
-        $xml = simplexml_load_string($response->getBody());
+        $xml = simplexml_load_string($response->getBody() ?? '');
         $titles = array_map(function ($item) {
             return str_replace('Changed: ', '', (string) $item->title);
-        }, $xml->xpath('//item'));
+        }, $xml->xpath('//item') ?? []);
         $this->assertContains('Page1', $titles);
         $this->assertContains('Page2', $titles);
     }
