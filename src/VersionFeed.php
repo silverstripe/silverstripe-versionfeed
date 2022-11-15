@@ -2,6 +2,7 @@
 
 namespace SilverStripe\VersionFeed;
 
+use SilverStripe\Dev\Deprecation;
 use SilverStripe\CMS\Model\SiteTreeExtension;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Forms\CheckboxField;
@@ -171,7 +172,7 @@ class VersionFeed extends SiteTreeExtension
     /**
      * Compile a list of changes to the current page, excluding non-published and explicitly secured versions.
      *
-     * @deprecated 2.0.0 Use VersionFeed::getDiffList instead
+     * @deprecated 2.0.0 Use VersionFeed::getDiffList() instead
      *
      * @param int $highestVersion Top version number to consider.
      * @param boolean $fullHistory Set to true to get the full change history, set to false for a single diff.
@@ -181,6 +182,7 @@ class VersionFeed extends SiteTreeExtension
      */
     public function getDiffedChanges($highestVersion = null, $fullHistory = true, $limit = 100)
     {
+        Deprecation::notice('2.0.0', 'Use VersionFeed::getDiffList() instead');
         return $this->getDiffList(
             $highestVersion,
             $fullHistory ? $limit : 1
