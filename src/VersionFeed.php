@@ -78,7 +78,7 @@ class VersionFeed extends SiteTreeExtension
         $offset = $highestVersion ? "AND \"SiteTree_Versions\".\"Version\"<='".(int)$highestVersion."'" : '';
         // Get just enough elements for diffing. We need one more than desired to have something to compare to.
         $qLimit = (int)$limit + 1;
-        $versions = $this->owner->allVersions(
+        $versions = $this->owner->Versions(
             "\"WasPublished\"='1' AND \"CanViewType\" IN ('Anyone', 'Inherit') $offset",
             "\"SiteTree\".\"LastEdited\" DESC, \"SiteTree\".\"ID\" DESC",
             $qLimit
