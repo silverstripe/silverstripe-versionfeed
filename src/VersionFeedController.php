@@ -114,7 +114,6 @@ class VersionFeedController extends Extension
 			AND ("PublicHistory" IS NULL OR "PublicHistory" = \'1\')
 			ORDER BY "LastEdited" DESC LIMIT ' . $limit);
         $lastChange = $latestChanges->record();
-        $latestChanges->rewind();
 
         if ($lastChange) {
             // Cache the diffs to remove DOS possibility.
