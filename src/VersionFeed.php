@@ -80,7 +80,7 @@ class VersionFeed extends SiteTreeExtension
         $qLimit = (int)$limit + 1;
         $versions = $this->owner->Versions(
             "\"WasPublished\"='1' AND \"CanViewType\" IN ('Anyone', 'Inherit') $offset",
-            "\"SiteTree\".\"LastEdited\" DESC, \"SiteTree\".\"ID\" DESC",
+            "\"LastEdited\" DESC, \"ID\" DESC",
             $qLimit
         );
 
