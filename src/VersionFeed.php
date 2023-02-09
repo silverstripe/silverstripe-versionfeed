@@ -11,7 +11,7 @@ use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\SiteConfig\SiteConfig;
-use SilverStripe\View\Parsers\Diff;
+use SilverStripe\View\Parsers\HtmlDiff;
 use SilverStripe\CMS\Model\SiteTree;
 
 class VersionFeed extends SiteTreeExtension
@@ -94,7 +94,7 @@ class VersionFeed extends SiteTreeExtension
             if (isset($previous)) {
                 // Produce the diff fields for use in the template.
                 if ($version->Title != $previous->Title) {
-                    $diffTitle = Diff::compareHTML($version->Title, $previous->Title);
+                    $diffTitle = HtmlDiff::compareHTML($version->Title, $previous->Title);
 
                     $version->DiffTitle = DBField::create_field('HTMLText', null);
                     $version->DiffTitle->setValue(
@@ -107,7 +107,7 @@ class VersionFeed extends SiteTreeExtension
                 }
 
                 if ($version->Content != $previous->Content) {
-                    $diffContent = Diff::compareHTML($version->Content, $previous->Content);
+                    $diffContent = HtmlDiff::compareHTML($version->Content, $previous->Content);
 
                     $version->DiffContent = DBField::create_field('HTMLText', null);
                     $version->DiffContent->setValue('<div>'.$diffContent.'</div>');
