@@ -7,15 +7,11 @@
 
 The module creates an RSS feed on each page with their change history, as well as one for the entire site.
 
-## Requirements
-
- * Silverstripe ^4
-
-**Note:** For a Silverstripe 3.x compatible version, please use [the 1.x release line](https://github.com/silverstripe/silverstripe-versionfeed/tree/1.2).
-
 ## Installation
 
-Install with composer by running `composer require silverstripe/versionfeed` in the root of your Silverstripe project.
+```sh
+composer require silverstripe/versionfeed
+```
 
 ## Usage
 
