@@ -203,7 +203,6 @@ class VersionFeed extends SiteTreeExtension
 
     public function getSiteRSSLink()
     {
-        // TODO: This link should be from the homepage, not this page.
         if (Config::inst()->get(get_class(), 'allchanges_enabled')
             && SiteConfig::current_site_config()->AllChangesEnabled
         ) {
