@@ -175,7 +175,7 @@ class VersionFeedFunctionalTest extends FunctionalTest
         $titles = array_map(function ($item) {
             return (string)$item->title;
         }, $xml->xpath('//item') ?? []);
-        // TODO Unclear if this should contain the original version
+
         $this->assertContains('Changed: Page1', $titles);
         $this->assertNotContains('Changed: Page2', $titles);
 
@@ -184,7 +184,7 @@ class VersionFeedFunctionalTest extends FunctionalTest
         $titles = array_map(function ($item) {
             return (string)$item->title;
         }, $xml->xpath('//item') ?? []);
-        // TODO Unclear if this should contain the original version
+
         $this->assertNotContains('Changed: Page1', $titles);
         $this->assertContains('Changed: Page2', $titles);
     }
