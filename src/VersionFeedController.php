@@ -11,25 +11,29 @@ use SilverStripe\ORM\DB;
 use SilverStripe\Security\Member;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Control\Controller;
 use SilverStripe\Core\Convert;
 use SilverStripe\View\Requirements;
 use SilverStripe\Core\Extension;
 use SilverStripe\VersionFeed\Filters\ContentFilter;
 
+/**
+ * @extends Extension<Controller&static>
+ */
 class VersionFeedController extends Extension
 {
     private static $allowed_actions = array(
         'changes',
         'allchanges'
     );
-    
+
     /**
      * Content handler
      *
      * @var ContentFilter
      */
     protected $contentFilter;
-    
+
     /**
      * Sets the content filter
      *
@@ -39,7 +43,7 @@ class VersionFeedController extends Extension
     {
         $this->contentFilter = $contentFilter;
     }
-    
+
     /**
      * Evaluates the result of the given callback
      *
@@ -163,7 +167,7 @@ class VersionFeedController extends Extension
         $rss->setTemplate('Page_allchanges_rss');
         return $rss->outputToBrowser();
     }
-    
+
     /**
      * Generates and embeds the RSS header link for the page-specific version rss feed
      */
@@ -172,7 +176,7 @@ class VersionFeedController extends Extension
         if (!Config::inst()->get(VersionFeed::class, 'changes_enabled') || !$this->owner->PublicHistory) {
             return;
         }
-        
+
         RSSFeed::linkToFeed(
             $this->owner->Link('changes'),
             _t(
@@ -193,7 +197,7 @@ class VersionFeedController extends Extension
         ) {
             return;
         }
-        
+
         // RSS feed to all-site changes.
         $title = Convert::raw2xml($this->linkToAllSitesRSSFeedTitle());
         $url = $this->owner->getSiteRSSLink();
