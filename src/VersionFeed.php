@@ -13,10 +13,13 @@ use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\View\Parsers\HtmlDiff;
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Versioned\Versioned_Version;
 
+/**
+ * @extends Extension<SiteTree&static>
+ */
 class VersionFeed extends SiteTreeExtension
 {
-    
     private static $db = array(
         'PublicHistory' => 'Boolean(true)'
     );
@@ -68,7 +71,7 @@ class VersionFeed extends SiteTreeExtension
      * @param int $highestVersion Top version number to consider.
      * @param int $limit Limit to the amount of items returned.
      *
-     * @returns ArrayList List of cleaned records.
+     * @return ArrayList<Versioned_Version> List of cleaned records.
      */
     public function getDiffList($highestVersion = null, $limit = 100)
     {
@@ -156,7 +159,7 @@ class VersionFeed extends SiteTreeExtension
      * Return a single diff representing this version.
      * Returns the initial version if there is nothing to compare to.
      *
-     * @return DataObject|null Object with relevant fields diffed.
+     * @return Versioned_Version|null Object with relevant fields diffed.
      */
     public function getDiff()
     {
@@ -173,7 +176,7 @@ class VersionFeed extends SiteTreeExtension
         if (!$this->owner->config()->get('changes_enabled')) {
             return;
         }
-        
+
         // Add public history field.
         $fields->addFieldToTab(
             'Root.Settings',

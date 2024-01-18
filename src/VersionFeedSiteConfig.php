@@ -7,13 +7,15 @@ use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\FieldGroup;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\ORM\DataExtension;
+use SilverStripe\SiteConfig\SiteConfig;
 
 /**
  * Allows global configuration of all changes
+ *
+ * @extends DataExtension<SiteConfig>
  */
 class VersionFeedSiteConfig extends DataExtension
 {
-    
     private static $db = array(
         'AllChangesEnabled' => 'Boolean(true)'
     );
@@ -26,7 +28,7 @@ class VersionFeedSiteConfig extends DataExtension
     {
         $labels['AllChangesEnabled'] = _t(__CLASS__ . '.ALLCHANGESLABEL', 'Make global changes feed public');
     }
-    
+
     public function updateCMSFields(FieldList $fields)
     {
         if (!Config::inst()->get(VersionFeed::class, 'allchanges_enabled')) {
