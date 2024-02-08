@@ -1,0 +1,13 @@
+sk:
+  SilverStripe\VersionFeed\VersionFeed:
+    LABEL: 'Zverejniť históriu'
+    SINGLEPAGEFEEDTITLE: 'Aktualizácie stránky {title}'
+    SITEFEEDTITLE: 'Aktualizácie {title}'
+    TITLECHANGED: 'Názov sa zmenil:'
+    Warning: 'Zverejnením histórie sa zverejnia aj zmeny, ktoré boli v tom čase chránené pred zrakom verejnosti.'
+    Warning2: 'Zmena nastavení prístupu tak, aby sa táto stránka alebo stránky pod ňou stali verejne prístupné,<br>môže viesť k zverejneniu všetkých historických zmien aj na týchto stránkach.<br> Skontrolujte nastavenia v časti "Verejná história", aby ste sa uistili, že sú zverejnené iba zamýšľané informácie.'
+    db_PublicHistory: 'Verejná história'
+  SilverStripe\VersionFeed\VersionFeedSiteConfig:
+    ALLCHANGES: 'Všetky zmeny stránky'
+    ALLCHANGESLABEL: 'Zverejnite informačný kanál globálnych zmien'
+    db_AllChangesEnabled: 'Všetky zmeny povolené'
