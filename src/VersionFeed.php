@@ -97,7 +97,7 @@ class VersionFeed extends SiteTreeExtension
             if (isset($previous)) {
                 // Produce the diff fields for use in the template.
                 if ($version->Title != $previous->Title) {
-                    $diffTitle = HtmlDiff::compareHTML($version->Title, $previous->Title);
+                    $diffTitle = HtmlDiff::compareHTML($version->Title ?? '', $previous->Title ?? '');
 
                     $version->DiffTitle = DBField::create_field('HTMLText', null);
                     $version->DiffTitle->setValue(
@@ -110,7 +110,7 @@ class VersionFeed extends SiteTreeExtension
                 }
 
                 if ($version->Content != $previous->Content) {
-                    $diffContent = HtmlDiff::compareHTML($version->Content, $previous->Content);
+                    $diffContent = HtmlDiff::compareHTML($version->Content ?? '', $previous->Content ?? '');
 
                     $version->DiffContent = DBField::create_field('HTMLText', null);
                     $version->DiffContent->setValue('<div>'.$diffContent.'</div>');
