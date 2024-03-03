@@ -191,6 +191,7 @@ class VersionFeedController extends Extension
     {
         if (!Config::inst()->get(VersionFeed::class, 'allchanges_enabled')
             || !SiteConfig::current_site_config()->AllChangesEnabled
+            || !method_exists($this->owner, 'getSiteRSSLink')
         ) {
             return;
         }
