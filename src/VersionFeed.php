@@ -206,7 +206,7 @@ class VersionFeed extends SiteTreeExtension
 
     public function getSiteRSSLink()
     {
-        if (Config::inst()->get(get_class(), 'allchanges_enabled')
+        if (Config::inst()->get(self::class, 'allchanges_enabled')
             && SiteConfig::current_site_config()->AllChangesEnabled
         ) {
             return $this->owner->Link('allchanges');
@@ -215,7 +215,7 @@ class VersionFeed extends SiteTreeExtension
 
     public function getDefaultRSSLink()
     {
-        if (Config::inst()->get(get_class(), 'changes_enabled') && $this->owner->PublicHistory) {
+        if (Config::inst()->get(self::class, 'changes_enabled') && $this->owner->PublicHistory) {
             return $this->owner->Link('changes');
         }
     }
