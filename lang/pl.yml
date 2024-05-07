@@ -1,0 +1,3 @@
+pl:
+  SilverStripe\VersionFeed\VersionFeed:
+    db_PublicHistory: 'Historia ogólnodostępna'
