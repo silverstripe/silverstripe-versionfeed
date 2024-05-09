@@ -1,7 +1,7 @@
 sl:
   SilverStripe\VersionFeed\VersionFeed:
     LABEL: 'Javno objavi zgodovino'
-    SINGLEPAGEFEEDTITLE: 'Posodobitve strani ''{title}'' '
+    SINGLEPAGEFEEDTITLE: "Posodobitve strani '{title}' "
     SITEFEEDTITLE: 'Posodobitve {title}'
     TITLECHANGED: 'Spremenjen naslov:'
     Warning: 'Objava zgodovine bo razkrila tudi spremembe, ki do sedaj niso bile javno objavljene.'
