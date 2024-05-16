@@ -60,7 +60,7 @@ class VersionFeedController extends Extension
         }
     }
 
-    public function onAfterInit()
+    protected function onAfterInit()
     {
         $this->linkToPageRSSFeed();
         $this->linkToAllSiteRSSFeed();

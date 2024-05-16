@@ -28,7 +28,7 @@ class VersionFeed extends SiteTreeExtension
         'PublicHistory' => true
     );
 
-    public function updateFieldLabels(&$labels)
+    protected function updateFieldLabels(&$labels)
     {
         $labels['PublicHistory'] = _t(__CLASS__ . '.LABEL', 'Make history public');
     }
@@ -171,7 +171,7 @@ class VersionFeed extends SiteTreeExtension
         return null;
     }
 
-    public function updateSettingsFields(FieldList $fields)
+    protected function updateSettingsFields(FieldList $fields)
     {
         if (!$this->owner->config()->get('changes_enabled')) {
             return;

@@ -24,12 +24,12 @@ class VersionFeedSiteConfig extends DataExtension
         'AllChangesEnabled' => true
     );
 
-    public function updateFieldLabels(&$labels)
+    protected function updateFieldLabels(&$labels)
     {
         $labels['AllChangesEnabled'] = _t(__CLASS__ . '.ALLCHANGESLABEL', 'Make global changes feed public');
     }
 
-    public function updateCMSFields(FieldList $fields)
+    protected function updateCMSFields(FieldList $fields)
     {
         if (!Config::inst()->get(VersionFeed::class, 'allchanges_enabled')) {
             return;
