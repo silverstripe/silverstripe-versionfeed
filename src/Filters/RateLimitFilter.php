@@ -64,7 +64,7 @@ class RateLimitFilter extends ContentFilter
      */
     protected function getCacheKey($itemkey)
     {
-        $key = self::CACHE_PREFIX;
+        $key = RateLimitFilter::CACHE_PREFIX;
 
         // Add global identifier
         if ($this->config()->get('lock_bypage')) {
