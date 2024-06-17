@@ -23,7 +23,7 @@ class CachedContentFilter extends ContentFilter
         $cache = $this->getCache();
 
         // Return cached value if available
-        $cacheEnabled = Config::inst()->get(self::class, 'cache_enabled');
+        $cacheEnabled = Config::inst()->get(CachedContentFilter::class, 'cache_enabled');
         $result = (isset($_GET['flush']) || !$cacheEnabled)
             ? null
             : $cache->get($key);
