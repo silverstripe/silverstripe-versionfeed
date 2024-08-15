@@ -28,6 +28,12 @@ class VersionFeed extends SiteTreeExtension
         'PublicHistory' => true
     );
 
+    private static array $scaffold_cms_fields_settings = [
+        'ignoreFields' => [
+            'PublicHistory',
+        ],
+    ];
+
     protected function updateFieldLabels(&$labels)
     {
         $labels['PublicHistory'] = _t(__CLASS__ . '.LABEL', 'Make history public');
