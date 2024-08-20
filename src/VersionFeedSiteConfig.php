@@ -6,15 +6,15 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\FieldGroup;
 use SilverStripe\Forms\FieldList;
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\SiteConfig\SiteConfig;
 
 /**
  * Allows global configuration of all changes
  *
- * @extends DataExtension<SiteConfig>
+ * @extends Extension<SiteConfig>
  */
-class VersionFeedSiteConfig extends DataExtension
+class VersionFeedSiteConfig extends Extension
 {
     private static $db = array(
         'AllChangesEnabled' => 'Boolean(true)'
