@@ -2,7 +2,6 @@
 
 namespace SilverStripe\VersionFeed;
 
-use SilverStripe\CMS\Model\SiteTreeExtension;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\FieldGroup;
@@ -13,12 +12,13 @@ use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\View\Parsers\HtmlDiff;
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Core\Extension;
 use SilverStripe\Versioned\Versioned_Version;
 
 /**
  * @extends Extension<SiteTree&static>
  */
-class VersionFeed extends SiteTreeExtension
+class VersionFeed extends Extension
 {
     private static $db = array(
         'PublicHistory' => 'Boolean(true)'
