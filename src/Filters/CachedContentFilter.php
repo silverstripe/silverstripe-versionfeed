@@ -3,6 +3,8 @@
 namespace SilverStripe\VersionFeed\Filters;
 
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Core\Kernel;
 
 /**
  * Caches results of a callback
@@ -24,7 +26,7 @@ class CachedContentFilter extends ContentFilter
 
         // Return cached value if available
         $cacheEnabled = Config::inst()->get(CachedContentFilter::class, 'cache_enabled');
-        $result = (isset($_GET['flush']) || !$cacheEnabled)
+        $result = (Injector::inst()->get(Kernel::class)->isFlushed() || !$cacheEnabled)
             ? null
             : $cache->get($key);
         if ($result) {

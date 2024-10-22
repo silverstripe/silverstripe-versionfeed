@@ -6,6 +6,8 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\HTTPResponse_Exception;
 use SilverStripe\Versioned\Versioned;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Core\Kernel;
 
 /**
  * Provides rate limiting of execution of a callback
@@ -85,7 +87,7 @@ class RateLimitFilter extends ContentFilter
     {
         // Bypass rate limiting if flushing, or timeout isn't set
         $timeout = $this->config()->get('lock_timeout');
-        if (isset($_GET['flush']) || !$timeout) {
+        if (Injector::inst()->get(Kernel::class)->isFlushed() || !$timeout) {
             return parent::getContent($key, $callback);
         }
 
