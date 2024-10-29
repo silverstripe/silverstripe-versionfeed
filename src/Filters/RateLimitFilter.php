@@ -5,7 +5,7 @@ namespace SilverStripe\VersionFeed\Filters;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\HTTPResponse_Exception;
-use SilverStripe\Versioned\Versioned;
+use SilverStripe\Versioned\Mode\Versioned;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Core\Kernel;
 

@@ -12,7 +12,7 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\FunctionalTest;
 use SilverStripe\SiteConfig\SiteConfig;
-use SilverStripe\Versioned\Versioned;
+use SilverStripe\Versioned\Mode\Versioned;
 use SilverStripe\VersionFeed\Filters\CachedContentFilter;
 use SilverStripe\VersionFeed\Filters\RateLimitFilter;
 use SilverStripe\VersionFeed\VersionFeed;

@@ -13,7 +13,7 @@ use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\View\Parsers\HtmlDiff;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Extension;
-use SilverStripe\Versioned\Versioned_Version;
+use SilverStripe\Versioned\Mode\Versioned_Version;
 
 /**
  * @extends Extension<SiteTree&static>

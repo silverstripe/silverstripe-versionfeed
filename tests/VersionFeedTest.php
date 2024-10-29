@@ -6,7 +6,7 @@ use Page;
 use SilverStripe\CMS\Controllers\ContentController;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\Versioned\Versioned;
+use SilverStripe\Versioned\Mode\Versioned;
 use SilverStripe\VersionFeed\VersionFeed;
 use SilverStripe\VersionFeed\VersionFeedController;
 
